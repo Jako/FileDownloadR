@@ -202,8 +202,8 @@ class FileDownloadR
                 $option = $options[$key];
             } elseif (array_key_exists($key, $this->config)) {
                 $option = $this->config[$key];
-            } elseif (array_key_exists("{$this->namespace}.{$key}", $this->modx->config)) {
-                $option = $this->modx->getOption("{$this->namespace}.{$key}");
+            } elseif (array_key_exists("$this->namespace.$key", $this->modx->config)) {
+                $option = $this->modx->getOption("$this->namespace.$key");
             }
         }
         return $option;
