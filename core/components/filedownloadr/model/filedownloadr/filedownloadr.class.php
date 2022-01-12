@@ -115,7 +115,7 @@ class FileDownloadR
      */
     public function __construct(modX $modx, $config = array())
     {
-        $this->modx = &$modx;
+        $this->modx =& $modx;
 
         $corePath = $this->getOption('core_path', $config, $this->modx->getOption('core_path') . 'components/' . $this->namespace . '/');
         $assetsUrl = $this->getOption('assets_url', $config, $this->modx->getOption('assets_url') . 'components/' . $this->namespace . '/');
