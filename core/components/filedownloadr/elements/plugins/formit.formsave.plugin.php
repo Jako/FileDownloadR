@@ -25,7 +25,7 @@ switch ($e) {
         if (!$formIt || !$formSave) {
             $errMsg = 'Unable to load FormIt or FormSave';
             $modx->setPlaceholder($fileDownload->getConfig('prefix') . 'error_message', $errMsg);
-            $modx->log(modX::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin FormSave');
+            $modx->log(xPDO::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin FormSave');
             return false;
         }
         break;
@@ -45,7 +45,7 @@ switch ($e) {
         if ($runFormit === false) {
             $errMsg = 'Unabled to save the downloader into FormSave';
             $modx->setPlaceholder($fileDownload->getConfig('prefix') . 'error_message', $errMsg);
-            $modx->log(modX::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin FormSave');
+            $modx->log(xPDO::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin FormSave');
             return false;
         }
         break;

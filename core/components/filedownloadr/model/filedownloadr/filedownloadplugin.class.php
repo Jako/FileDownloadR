@@ -168,7 +168,7 @@ class FileDownloadPlugin
             $loaded = $this->_loadPlugin($plugin);
             if (!$loaded) {
                 if (!empty($plugin['strict'])) {
-                    $this->modx->log(modX::LOG_LEVEL_ERROR, $eventName . ' of <b>' . $plugin . '</b> returned false.', '', 'FileDownloadPlugin');
+                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, $eventName . ' of <b>' . $plugin . '</b> returned false.', '', 'FileDownloadPlugin');
                     return false;
                 } else {
                     continue;
@@ -200,7 +200,7 @@ class FileDownloadPlugin
                 $success = $this->_loadFileBasedPlugin($pluginName);
             } else {
                 /* no plugin found */
-                $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not find plugin "' . $pluginName . '".', '', 'FileDownloadPlugin');
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Could not find plugin "' . $pluginName . '".', '', 'FileDownloadPlugin');
                 $success = false;
             }
         }
@@ -223,7 +223,7 @@ class FileDownloadPlugin
         try {
             $success = include $path;
         } catch (Exception $e) {
-            $this->modx->log(modX::LOG_LEVEL_ERROR, $e->getMessage(), '', 'FileDownloadPlugin');
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $e->getMessage(), '', 'FileDownloadPlugin');
         }
         return $success;
     }

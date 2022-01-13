@@ -78,13 +78,13 @@ if ($object->xpdo) {
                 ) {
                     $count = (int)$modx->getCount('fdCount');
                     if ($count > 0) {
-                        $modx->log(modX::LOG_LEVEL_INFO, "Starting to convert the database...", '', 'FileDownloadR');
+                        $modx->log(xPDO::LOG_LEVEL_INFO, "Starting to convert the database...", '', 'FileDownloadR');
                         $split = ceil($count / 1000); // limit
                         for ($index = 0; $index < $split; $index++) {
                             $offset = $index * 10;
                             convertCount($modx, $offset);
                         }
-                        $modx->log(modX::LOG_LEVEL_INFO, "Conversion is finished!", '', 'FileDownloadR');
+                        $modx->log(xPDO::LOG_LEVEL_INFO, "Conversion is finished!", '', 'FileDownloadR');
                     }
                 }
             }

@@ -33,7 +33,7 @@ switch ($e) {
         if ($runFormit === false) {
             $errMsg = 'Unabled to send email.';
             $modx->setPlaceholder($fileDownload->getConfig('prefix') . 'error_message', $errMsg);
-            $modx->log(modX::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin Email');
+            $modx->log(xPDO::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin Email');
             return false;
         }
         break;

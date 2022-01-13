@@ -151,7 +151,7 @@ class FileDownloadR
 
         $this->_imgType = $this->_imgTypeProp();
         if (empty($this->_imgType)) {
-            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not load image types.', '', 'FileDownloadR', __FILE__, __LINE__);
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Could not load image types.', '', 'FileDownloadR', __FILE__, __LINE__);
             return;
         }
         if (!empty($this->config['encoding'])) {
@@ -160,7 +160,7 @@ class FileDownloadR
 
         if (!empty($this->config['plugins'])) {
             if (!$this->modx->loadClass($this->namespace . '.FileDownloadPlugin', $this->config['modelPath'], true, true)) {
-                $this->modx->log(modX::LOG_LEVEL_ERROR, 'Could not load plugin class.', '', 'FileDownloadR', __FILE__, __LINE__);
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Could not load plugin class.', '', 'FileDownloadR', __FILE__, __LINE__);
                 return;
             }
             $this->plugins = new FileDownloadPlugin($this);
@@ -851,7 +851,7 @@ class FileDownloadR
             if ($fdlPath->save() === false) {
                 $msg = $this->modx->lexicon($this->config['prefix'] . 'err_save_counter');
                 $this->setError($msg);
-                $this->modx->log(modX::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                 return false;
             }
         }
@@ -1057,7 +1057,7 @@ class FileDownloadR
             if (empty($this->mediaSource)) {
                 $rootRealPath = realpath($rootPath);
                 if (!is_dir($rootPath) || empty($rootRealPath)) {
-                    $this->modx->log(modX::LOG_LEVEL_ERROR, '&getDir parameter expects a correct dir path. <b>"' . $rootPath . '"</b> is given.', '', 'FileDownloadR', __FILE__, __LINE__);
+                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, '&getDir parameter expects a correct dir path. <b>"' . $rootPath . '"</b> is given.', '', 'FileDownloadR', __FILE__, __LINE__);
                     return array();
                 }
             }
@@ -1256,7 +1256,7 @@ class FileDownloadR
             $fileRealPath = realpath($path);
             if (!is_file($fileRealPath) || !$fileRealPath) {
                 // @todo: lexicon
-                $this->modx->log(modX::LOG_LEVEL_ERROR, '&getFile parameter expects a correct file path. ' . $path . ' is given.', '', 'FileDownloadR', __FILE__, __LINE__);
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, '&getFile parameter expects a correct file path. ' . $path . ' is given.', '', 'FileDownloadR', __FILE__, __LINE__);
                 return array();
             }
             $baseName = $this->_basename($fileRealPath);
@@ -1627,7 +1627,7 @@ class FileDownloadR
                 } else {
                     $msg = 'Unable to get the content from remote server';
                     $this->setError($msg);
-                    $this->modx->log(modX::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                 }
             } else {
                 $fileExists = false;
@@ -1788,7 +1788,7 @@ class FileDownloadR
         if ($fdDownload->save() === false) {
             $msg = $this->modx->lexicon($this->config['prefix'] . 'err_save_counter');
             $this->setError($msg);
-            $this->modx->log(modX::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
         }
     }
 
