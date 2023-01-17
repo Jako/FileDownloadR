@@ -1,7 +1,7 @@
 {
   "name": "filedownloadr",
   "description": "Display a list of downloadable files from a directory with download counter.",
-  "author": "goldsky",
+  "author": "Rico Goldsky <goldsky@virtudraft.com>",
   "private": true,
   "devDependencies": {
     "autoprefixer": "^10.3.6",
