@@ -1,43 +1,48 @@
 <?php
 /**
- * Default English lexicon topic
+ * Properties Lexicon Entries for FileDownloadR
  *
- * @language en
  * @package filedownload
  * @subpackage lexicon
  */
-/* FileDownload & FileDownloadLink snippet */
-
-$_lang['filedownloadr.filedownload.ajaxContainerId'] = 'The Ajax\'s element container id.';
-$_lang['filedownloadr.filedownload.ajaxControllerPage'] = 'The MODX\'s resource page id as the Ajax processor file';
-$_lang['filedownloadr.filedownload.browseDirectories'] = 'Allows users to view subdirectories of the specified directory. When using this feature the following templates get used: parent & directory.';
-$_lang['filedownloadr.filedownload.chkDesc'] = 'This allows descriptions to be added to the file listing included in a chunk. All of the files and descriptions should be listed in the chunk using the following format: path to file/filename|description||';
-$_lang['filedownloadr.filedownload.countDownloads'] = 'With the countDownloads parameter set to 1, everytime a user downloads a file, it will be tracked in a database table.';
-$_lang['filedownloadr.filedownload.cssAltRow'] = 'This specifies the class that will be applied to every other file/folder so a ledger look can be styled.';
-$_lang['filedownloadr.filedownload.cssDir'] = 'This specifies the class name that will be applied to all directories.';
-$_lang['filedownloadr.filedownload.cssExtension'] = 'With this parameter set to 1, a class will be added to each file according to the file\'s extension.';
-$_lang['filedownloadr.filedownload.cssExtensionPrefix'] = 'Prefix to the cssExtension class name.';
-$_lang['filedownloadr.filedownload.cssExtensionSuffix'] = 'Suffix to the cssExtension class name';
-$_lang['filedownloadr.filedownload.cssFile'] = 'This specifies the class name that will be applied to all file rows.';
-$_lang['filedownloadr.filedownload.cssFirstDir'] = 'This specifies the class name that will be applied to the first directory.';
-$_lang['filedownloadr.filedownload.cssFirstFile'] = 'This specifies the class name that will be applied to the first file.';
-$_lang['filedownloadr.filedownload.cssGroupDir'] = 'This specifies the class name that will be applied to the directory for multi-directories grouping.';
-$_lang['filedownloadr.filedownload.cssLastDir'] = 'This specifies the class name that will be applied to the last folder.';
-$_lang['filedownloadr.filedownload.cssLastFile'] = 'This specifies the class name that will be applied to the last file.';
-$_lang['filedownloadr.filedownload.cssPath'] = 'This specifies the class that will be applied to the path when using directory browsing.';
-$_lang['filedownloadr.filedownload.dateFormat'] = 'PHP\'s date formatting for each file in the output.';
-$_lang['filedownloadr.filedownload.extHidden'] = 'This will exclude the files displayed to files with a valid extension from the comma delimited list of file extensions.';
-$_lang['filedownloadr.filedownload.extShown'] = 'This will limit the files displayed to files with a valid extension from the list. comma delimited list of file extensions';
-$_lang['filedownloadr.filedownload.fileCss'] = 'FileDownload\'s Cascading Style Sheet file for the page header';
-$_lang['filedownloadr.filedownload.fileJs'] = 'FileDownload\'s Javascript file for the page header';
-$_lang['filedownloadr.filedownload.getDir'] = 'This is used to specify which directories to display with the snippet. Multiple directories can be specified by seperating them with a comma. When specifying multiple directories the directory browsing functionality is no longer available.';
-$_lang['filedownloadr.filedownload.getFile'] = 'This will make the snippet output only the file specified. The getFolder parameter is still required and getFile should be a file inside of the directory. This allows for use of the download script and download counting with a single file.';
-$_lang['filedownloadr.filedownload.groupByDirectory'] = 'When multiple directories are specified in the getDir parameter, this parameter will group the files by directory. The directory template will be added above each group.';
-$_lang['filedownloadr.filedownload.imgLocat'] = 'Path to the images to associate with each file extension. The images will be outputted with [+fd.image+] placeholder.';
-$_lang['filedownloadr.filedownload.imgTypes'] = 'A chunk\'s name to allow associations between file extensions and an image.';
-$_lang['filedownloadr.filedownload.noDownload'] = 'This property will make the list only displays files without their download links.';
-$_lang['filedownloadr.filedownload.saltText'] = 'Fill this parameter with any text. This text will be added to the file\'s link to disguise the direct paths';
-$_lang['filedownloadr.filedownload.sortBy'] = 'This allows the files to be sorted by all of the fields listed. When using the directory browsing feature the files will be sorted by type first, this will put the directories first in the list. When multiple directories are specified and the group by directory feature is used; the files are sorted by path first to keep the files in order by directory.';
+$_lang['filedownloadr.filedownload.ajaxContainerId'] = 'The container id of the AJAX element.';
+$_lang['filedownloadr.filedownload.ajaxControllerPage'] = 'The resource id of the MODX resource used as AJAX connector.';
+$_lang['filedownloadr.filedownload.ajaxMode'] = 'Enable the AJAX mode of the snippet.';
+$_lang['filedownloadr.filedownload.breadcrumbSeparator'] = 'Separator string between the parts of the breadcrumb.';
+$_lang['filedownloadr.filedownload.browseDirectories'] = 'Enable browsing of subdirectories in the specified directory.';
+$_lang['filedownloadr.filedownload.chkDesc'] = 'Name of a chunk that contains the descriptions for the listed files. Files and descriptions have to be listed in the chunk using the following format: path to file/filename|description||';
+$_lang['filedownloadr.filedownload.countDownloads'] = 'Enable the download count in the database.';
+$_lang['filedownloadr.filedownload.cssAltRow'] = 'This class that will be added to each second row in the template chunks.';
+$_lang['filedownloadr.filedownload.cssDir'] = 'This class that will be added to all directory entries in the template chunks.';
+$_lang['filedownloadr.filedownload.cssExtension'] = 'Enable adding a class to each file in the template chunks according to the file extension.';
+$_lang['filedownloadr.filedownload.cssExtensionPrefix'] = 'Prefix added to the cssExtension class.';
+$_lang['filedownloadr.filedownload.cssExtensionSuffix'] = 'Suffix added to the cssExtension class.';
+$_lang['filedownloadr.filedownload.cssFile'] = 'This class that will be added to all file entries in the template chunks.';
+$_lang['filedownloadr.filedownload.cssFirstDir'] = 'This class that will be added to the first directory entry in the template chunks.';
+$_lang['filedownloadr.filedownload.cssFirstFile'] = 'This class that will be added to the first file entry in the template chunks.';
+$_lang['filedownloadr.filedownload.cssGroupDir'] = 'This class that will be added to a directory entry for multi-directories grouping in the template chunks.';
+$_lang['filedownloadr.filedownload.cssLastDir'] = 'This class that will be added to the last directory entry in the template chunks.';
+$_lang['filedownloadr.filedownload.cssLastFile'] = 'This class that will be added to last file entry in the template chunks.';
+$_lang['filedownloadr.filedownload.cssPath'] = 'This class that will be added to the path when using directory browsing in the template chunks.';
+$_lang['filedownloadr.filedownload.dateFormat'] = 'PHP date format for each file in the output.';
+$_lang['filedownloadr.filedownload.deleteGroups'] = 'Enable the delete link for users that belong to the specified groups. Multiple groups can be specified using a comma-separated list.';
+$_lang['filedownloadr.filedownload.directLink'] = 'Use the direct url of the file, rather than the hashed link. Make sure that the url is web accessible.';
+$_lang['filedownloadr.filedownload.downloadByOther'] = 'Disable the download action of this snippet and use a different way.';
+$_lang['filedownloadr.filedownload.extHidden'] = 'Comma-separated list of file extensions used to exclude files from the displayed list.';
+$_lang['filedownloadr.filedownload.extShown'] = 'Comma-separated list of file extensions used to include files in the displayed list.';
+$_lang['filedownloadr.filedownload.fileCss'] = 'Path of a CSS file that is registered in the HTML output in the frontend.';
+$_lang['filedownloadr.filedownload.fileJs'] = 'Path of a JavaScript file that is registered in the HTML output in the frontend.';
+$_lang['filedownloadr.filedownload.getDir'] = 'Specify the directories displayed in the snippet output. Multiple directories can be specified with a comma-separated list. When multiple directories are specified the directory browsing functionality is disabled.';
+$_lang['filedownloadr.filedownload.getFile'] = 'Specify the file displayed in the snippet output. The getDir parameter is still required and getFile has to be a file inside of the directory.';
+$_lang['filedownloadr.filedownload.groupByDirectory'] = 'Enable grouping the files by directory when multiple directories are specified in the getDir parameter. The tplGroupDir template will be added above each group.';
+$_lang['filedownloadr.filedownload.imgLocat'] = 'Path to the images associated with each file extension. The images are output with the placeholder [[+fd.image]].';
+$_lang['filedownloadr.filedownload.imgTypes'] = 'Name of a chunk that contains the associations between file extensions and and images.';
+$_lang['filedownloadr.filedownload.mediaSourceId'] = 'Locate the files and directories relative to the media source base path.';
+$_lang['filedownloadr.filedownload.noDownload'] = 'Disable the download link This property will make the list only displays files without their download links.';
+$_lang['filedownloadr.filedownload.prefix'] = 'Prefix for the placeholders in the template chunks.';
+$_lang['filedownloadr.filedownload.saltText'] = 'With this text the file path will be extended to be able to create individual hashes for the file download.';
+$_lang['filedownloadr.filedownload.showEmptyDirectory'] = 'Show directories even when they are empty.';
+$_lang['filedownloadr.filedownload.sortBy'] = 'Sort type of the files. When directory browsing is enabled the directories are displayed first in the list. When multiple directories are specified and the group by directory feature is used, the files are sorted by each directory path first.';
 $_lang['filedownloadr.filedownload.sortBy.count'] = 'Count';
 $_lang['filedownloadr.filedownload.sortBy.date'] = 'Date';
 $_lang['filedownloadr.filedownload.sortBy.description'] = 'Description';
@@ -49,16 +54,36 @@ $_lang['filedownloadr.filedownload.sortBy.size'] = 'Size';
 $_lang['filedownloadr.filedownload.sortBy.sizeText'] = 'Size (text)';
 $_lang['filedownloadr.filedownload.sortBy.type'] = 'Type';
 $_lang['filedownloadr.filedownload.sortByCaseSensitive'] = 'Case sensitive option for sorting.';
-$_lang['filedownloadr.filedownload.sortOrder'] = 'Sort order';
+$_lang['filedownloadr.filedownload.sortOrder'] = 'Sort order.';
 $_lang['filedownloadr.filedownload.sortOrder.ascending'] = 'Ascending';
 $_lang['filedownloadr.filedownload.sortOrder.descending'] = 'Descending';
-$_lang['filedownloadr.filedownload.sortOrderNatural'] = 'Sort order option by a natural order';
-$_lang['filedownloadr.filedownload.tpl'] = 'Template with @BINDING (@INLINE / @FILE / @CHUNK) ability';
-$_lang['filedownloadr.filedownload.tplDir'] = 'This is the folder template (chunk/file) if it is accessible';
-$_lang['filedownloadr.filedownload.tplFile'] = 'This is the file row template (chunk/file)';
-$_lang['filedownloadr.filedownload.tplFile'] = 'This is the file row template (chunk/file)';
-$_lang['filedownloadr.filedownload.tplGroupDir'] = 'This is the template of the directory path if the &groupByDirectory is enabled';
-$_lang['filedownloadr.filedownload.tplIndex'] = 'index.html file/chunk to hide the download folders';
-$_lang['filedownloadr.filedownload.tplWrapper'] = 'This is the container template (chunk/file) of all of the snippet\'s results';
-$_lang['filedownloadr.filedownload.userGroups'] = 'This will make the download link active for users that belong to the specified groups. If a user is not logged in they will receive a JavaScript alert with the message contained in the noDownload language setting. Multiple groups can be specified by using a comma delimited list.';
-
+$_lang['filedownloadr.filedownload.sortOrderNatural'] = 'Sort by natural order.';
+$_lang['filedownloadr.filedownload.toArray'] = 'Returns the snippet result with print_r without parsing the templates.';
+$_lang['filedownloadr.filedownload.tplBreadcrumb'] = 'Name of a chunk that is used as breadcrumb item template. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplDir'] = 'Name of a chunk that is used as a directory template. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplFile'] = 'Name of a chunk that is used as a file row template. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplGroupDir'] = 'Name of a chunk that is used as a template of the directory path if the &groupByDirectory is enabled. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplIndex'] = 'Name of a chunk that is used as a index.html template to hide the download directories. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplNotAllowed'] = 'Name of a chunk that is used as a forbidden access template. The login snippet or a redirect to the login page can be used here. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplWrapper'] = 'Name of a chunk that is used as container template of all of the snippet\'s results. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplWrapperDir'] = 'Name of a chunk that is used as container template for directories. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.tplWrapperFile'] = 'Name of a chunk that is used as container template for files. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownload.userGroups'] = 'This will show the file list for users that belong to the specified groups. Users that don\'t not belong to this group or are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.';
+$_lang['filedownloadr.filedownloadlink.ajaxContainerId'] = 'The container id of the AJAX element.';
+$_lang['filedownloadr.filedownloadlink.ajaxControllerPage'] = 'The resource id of the MODX resource used as AJAX connector.';
+$_lang['filedownloadr.filedownloadlink.ajaxMode'] = 'Enable the AJAX mode of the snippet.';
+$_lang['filedownloadr.filedownloadlink.chkDesc'] = 'Name of a chunk that contains the descriptions for the listed files. Files and descriptions have to be listed in the chunk using the following format: path to file/filename|description||';
+$_lang['filedownloadr.filedownloadlink.countDownloads'] = 'Enable the download count in the database.';
+$_lang['filedownloadr.filedownloadlink.dateFormat'] = 'PHP date format for each file in the output.';
+$_lang['filedownloadr.filedownloadlink.directLink'] = 'Use the direct url of the file, rather than the hashed link. Make sure that the url is web accessible.';
+$_lang['filedownloadr.filedownloadlink.fileCss'] = 'Path of a CSS file that is registered in the HTML output in the frontend.';
+$_lang['filedownloadr.filedownloadlink.fileJs'] = 'Path of a JavaScript file that is registered in the HTML output in the frontend.';
+$_lang['filedownloadr.filedownloadlink.getFile'] = 'Specify the file displayed in the snippet output.';
+$_lang['filedownloadr.filedownloadlink.imgLocat'] = 'Path to the images associated with each file extension. The images are output with the placeholder [[+fd.image]].';
+$_lang['filedownloadr.filedownloadlink.imgTypes'] = 'Name of a chunk that contains the associations between file extensions and and images.';
+$_lang['filedownloadr.filedownloadlink.noDownload'] = 'Disable the download link This property will make the list only displays files without their download links.';
+$_lang['filedownloadr.filedownloadlink.prefix'] = 'Prefix for the placeholders in the template chunks.';
+$_lang['filedownloadr.filedownloadlink.saltText'] = 'With this text the file path will be extended to be able to create individual hashes for the file download.';
+$_lang['filedownloadr.filedownloadlink.tpl'] = 'Name of a chunk that is used as a download link template. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownloadlink.tplNotAllowed'] = 'Name of a chunk that is used as a forbidden access template. The login snippet or a redirect to the login page can be used here. @BINDING is possible (@INLINE/@FILE/@CHUNK).';
+$_lang['filedownloadr.filedownloadlink.userGroups'] = 'Show the file list for users that belong to the specified groups. Users that don\'t belong to these groups or that are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.';

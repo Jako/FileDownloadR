@@ -1,9 +1,9 @@
 {
   "name": "FileDownloadR",
   "lowCaseName": "filedownloadr",
-  "description": "Display a list of downloadable files from a directory with download counter.",
-  "author": "goldsky",
-  "version": "2.1.0",
+  "description": "Display a list of downloadable files without revealing the file url.",
+  "author": "Rico Goldsky, Thomas Jakobi",
+  "version": "3.0.0",
   "package": {
     "elements": {
       "snippets": [
@@ -15,6 +15,20 @@
             {
               "name": "ajaxContainerId",
               "value": "file-download"
+            },
+            {
+              "name": "ajaxControllerPage",
+              "value": ""
+            },
+            {
+              "name": "ajaxMode",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "breadcrumbSeparator",
+              "type": "combo-boolean",
+              "value": " / "
             },
             {
               "name": "browseDirectories",
@@ -84,6 +98,20 @@
               "value": "Y-m-d"
             },
             {
+              "name": "deleteGroups",
+              "value": ""
+            },
+            {
+              "name": "directLink",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "downloadByOther",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
               "name": "extHidden",
               "value": ""
             },
@@ -121,56 +149,69 @@
               "value": "fdImages"
             },
             {
+              "name": "mediaSourceId",
+              "value": "0"
+            },
+            {
               "name": "noDownload",
               "type": "combo-boolean",
               "value": "0"
             },
             {
+              "name": "prefix",
+              "value": "fd."
+            },
+            {
               "name": "saltText",
-              "value": "FileDownload"
+              "value": "FileDownloadR"
+            },
+            {
+              "name": "showEmptyDirectory",
+              "type": "combo-boolean",
+              "value": "0"
             },
             {
               "name": "sortBy",
               "type": "list",
               "options": [
                 {
-                  "name": "filedownloadr.filedownload.sortBy.filename",
+                  "text": "filedownloadr.filedownload.sortBy.filename",
                   "value": "filename"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.extension",
+                  "text": "filedownloadr.filedownload.sortBy.extension",
                   "value": "extension"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.path",
+                  "text": "filedownloadr.filedownload.sortBy.path",
                   "value": "path"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.size",
+                  "text": "filedownloadr.filedownload.sortBy.size",
                   "value": "size"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.sizeText",
+                  "text": "filedownloadr.filedownload.sortBy.sizeText",
                   "value": "sizeText"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.type",
+                  "text": "filedownloadr.filedownload.sortBy.type",
                   "value": "type"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.date",
+                  "text": "filedownloadr.filedownload.sortBy.date",
                   "value": "date"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.description",
+                  "text": "filedownloadr.filedownload.sortBy.description",
                   "value": "description"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.count",
+                  "text": "filedownloadr.filedownload.sortBy.count",
                   "value": "count"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortBy.fullPath",
+                  "text": "filedownloadr.filedownload.sortBy.fullPath",
                   "value": "fullPath"
                 }
               ],
@@ -186,11 +227,11 @@
               "type": "list",
               "options": [
                 {
-                  "name": "filedownloadr.filedownload.sortOrder.ascending",
+                  "text": "filedownloadr.filedownload.sortOrder.ascending",
                   "value": "asc"
                 },
                 {
-                  "name": "filedownloadr.filedownload.sortOrder.descending",
+                  "text": "filedownloadr.filedownload.sortOrder.descending",
                   "value": "desc"
                 }
               ],
@@ -202,23 +243,44 @@
               "value": "1"
             },
             {
+              "name": "toArray",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "tplBreadcrumb",
+              "value": "fdBreadcrumbTpl"
+            },
+            {
               "name": "tplDir",
-              "value": "tpl-row-dir"
+              "value": "fdRowDirTpl"
             },
             {
               "name": "tplFile",
-              "value": "tpl-row-file"
+              "value": "fdRowFileTpl"
             },
             {
               "name": "tplGroupDir",
-              "value": "tpl-group-dir"
+              "value": "fdGroupDirTpl"
             },
             {
               "name": "tplIndex",
-              "value": "tpl-index"
+              "value": "fdIndexTpl"
+            },
+            {
+              "name": "tplNotAllowed",
+              "value": "fdNotAllowedTpl"
             },
             {
               "name": "tplWrapper",
+              "value": "fdWrapperTpl"
+            },
+            {
+              "name": "tplWrapperDir",
+              "value": ""
+            },
+            {
+              "name": "tplWrapperFile",
               "value": ""
             },
             {
@@ -233,6 +295,19 @@
           "file": "filedownloadlink.snippet.php",
           "properties": [
             {
+              "name": "ajaxContainerId",
+              "value": "file-download"
+            },
+            {
+              "name": "ajaxControllerPage",
+              "value": "0"
+            },
+            {
+              "name": "ajaxMode",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
               "name": "chkDesc",
               "value": ""
             },
@@ -244,6 +319,11 @@
             {
               "name": "dateFormat",
               "value": "Y-m-d"
+            },
+            {
+              "name": "directLink",
+              "type": "combo-boolean",
+              "value": "0"
             },
             {
               "name": "fileCss",
@@ -266,24 +346,50 @@
               "value": "fdImages"
             },
             {
+              "name": "noDownload",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "prefix",
+              "value": "fd."
+            },
+            {
               "name": "saltText",
               "value": "FileDownload"
             },
             {
               "name": "tpl",
-              "value": "@INLINE: <a href=\"[[+link]]\">[[+filename]]</a>"
+              "value": "@CODE: <a href=\"[[+link]]\">[[+filename]]</a>"
+            },
+            {
+              "name": "tplNotAllowed",
+              "value": "fdNotAllowedTpl"
             },
             {
               "name": "userGroups",
               "value": ""
             }
           ]
+        }
+      ],
+      "plugins": [
+        {
+          "name": "FileDownloadEmail",
+          "file": "filedownload.email.plugin.php",
+          "events": [
+            "OnFileDownloadAfterFileDownload"
+          ],
+          "disabled": true
         },
         {
-          "name": "FileDownloadEmailPlugin",
-          "description": "Snippet as a plugin for FileDownload R's.",
-          "file": "filedownload.formit.email.plugin.php",
-          "properties": []
+          "name": "FileDownloadFormSave",
+          "file": "filedownload.formsave.plugin.php",
+          "events": [
+            "OnFileDownloadLoad",
+            "OnFileDownloadAfterFileDownload"
+          ],
+          "disabled": true
         }
       ],
       "chunks": [
@@ -301,6 +407,51 @@
           "name": "FileDownloadEmailChunk",
           "description": "Email chunk for FileDownload's plugin",
           "file": "filedownloademail.chunk.html"
+        },
+        {
+          "name": "fdBreadcrumbTpl",
+          "description": "Template for breadcrumb item",
+          "file": "tpl-breadcrumb.chunk.html"
+        },
+        {
+          "name": "fdGroupDirTpl",
+          "description": "Template of the directory path if groupByDirectory is enabled",
+          "file": "tpl-group-dir.chunk.html"
+        },
+        {
+          "name": "fdIndexTpl",
+          "description": "Template for a generated index.html file to cover up the directory from direct web access",
+          "file": "tpl-index.chunk.html"
+        },
+        {
+          "name": "fdNotAllowedTpl",
+          "description": "Template for forbidden access",
+          "file": "tpl-notallowed.chunk.html"
+        },
+        {
+          "name": "fdRowDirTpl",
+          "description": "Template for a directory row",
+          "file": "tpl-row-dir.chunk.html"
+        },
+        {
+          "name": "fdRowFileTpl",
+          "description": "Template for a file row",
+          "file": "tpl-row-file.chunk.html"
+        },
+        {
+          "name": "fdWrapperTpl",
+          "description": "Container template for the snippet results",
+          "file": "tpl-wrapper.chunk.html"
+        },
+        {
+          "name": "fdWrapperDirTpl",
+          "description": "Optional container template for folders",
+          "file": "tpl-wrapper-dir.chunk.html"
+        },
+        {
+          "name": "fdWrapperFileTpl",
+          "description": "Optional container template for files",
+          "file": "tpl-wrapper-file.chunk.html"
         }
       ]
     },
@@ -332,13 +483,32 @@
       "fdPaths"
     ]
   },
+  "dependencies": [
+    {
+      "name": "php",
+      "version": ">=7.4"
+    },
+    {
+      "name": "modx",
+      "version": ">=2.8"
+    }
+  ],
   "build": {
-    "readme": "docs/readme.txt",
-    "license": "docs/license.txt",
-    "changelog": "docs/changelog.txt",
+    "readme": "docs/readme.md",
+    "license": "docs/license.md",
+    "changelog": "docs/changelog.md",
+    "options": {
+      "composer": true
+    },
+    "setupOptions": {
+      "source": "setup.options.php"
+    },
     "resolver": {
       "after": [
-        "update_tables.php"
+        "resolve.composer.php",
+        "resolve.synctables.php",
+        "resolve.update.php",
+        "resolve.treehillstudio.php"
       ]
     }
   }

@@ -20,7 +20,7 @@ class ipInfo {
   private $apiVersion = null;
 
   // Hold the API URL (should have trailing /)
-  private $apiURL = 'http://api.ipinfodb.com/';
+  private $apiURL = 'https://api.ipinfodb.com/';
 
   /**
     * __construct
