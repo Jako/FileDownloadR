@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Display a list of downloadable files without revealing the file url.",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "package": {
     "elements": {
       "snippets": [
@@ -360,7 +360,7 @@
             },
             {
               "name": "tpl",
-              "value": "@CODE: <a href=\"[[+link]]\">[[+filename]]</a>"
+              "value": "@CODE <a href=\"[[+link]]\">[[+filename]]</a>"
             },
             {
               "name": "tplNotAllowed",

@@ -48,7 +48,7 @@ class Parse
     ];
 
     /**
-     * FileDownloadR constructor
+     * Parse constructor
      *
      * @param modX $modx A reference to the modX instance.
      */
@@ -87,7 +87,7 @@ class Parse
      */
     public function getChunk($tpl, $properties = null)
     {
-        if (class_exists('pdoTools') && $pdo = $this->modx->getService('pdoTools')) {
+        if ($pdo = $this->getPdoTools()) {
             $output = $pdo->getChunk($tpl, $properties ?? []);
         } else {
             $output = false;
@@ -187,6 +187,18 @@ class Parse
                 break;
         }
         return $output;
+    }
+
+    public function getPdoTools()
+    {
+        $pdoTools = null;
+        if (class_exists('pdoTools')) {
+            $pdoTools = $this->modx->getService('pdoTools');
+        } elseif (class_exists('ModxPro\PdoTools\CoreTools')) {
+            $pdoTools = $this->modx->getService('ModxPro\PdoTools\CoreTools');
+        }
+
+        return $pdoTools;
     }
 
     /**

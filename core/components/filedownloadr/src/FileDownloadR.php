@@ -46,7 +46,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.0.0';
+    public $version = '3.0.1';
 
     /**
      * The class options

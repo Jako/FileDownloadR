@@ -41,7 +41,7 @@ class FileDownloadLinkSnippet extends Snippet
             'prefix' => 'fd.',
             'saltText' => 'FileDownloadR',
             'toArray::bool' => false,
-            'tpl' => '@CODE: <a href="[[+link]]">[[+filename]]</a>',
+            'tpl' => '@CODE <a href="[[+link]]">[[+filename]]</a>',
             'tplNotAllowed' => 'fdNotAllowedTpl',
             'useGeolocation::bool' => $this->filedownloadr->getOption('use_geolocation'),
             'userGroups' => '',
