@@ -81,6 +81,7 @@ $_lang['filedownloadr.filedownloadlink.fileJs'] = 'Path of a JavaScript file tha
 $_lang['filedownloadr.filedownloadlink.getFile'] = 'Specify the file displayed in the snippet output.';
 $_lang['filedownloadr.filedownloadlink.imgLocat'] = 'Path to the images associated with each file extension. The images are output with the placeholder [[+fd.image]].';
 $_lang['filedownloadr.filedownloadlink.imgTypes'] = 'Name of a chunk that contains the associations between file extensions and and images.';
+$_lang['filedownloadr.filedownloadlink.mediaSourceId'] = 'The files and directories are searched relative to the base path of the specified media source.';
 $_lang['filedownloadr.filedownloadlink.noDownload'] = 'Display only files without their download link in the list.';
 $_lang['filedownloadr.filedownloadlink.prefix'] = 'Prefix for the placeholders in the template chunks.';
 $_lang['filedownloadr.filedownloadlink.saltText'] = 'With this text the file path will be extended to be able to create individual hashes for the file download.';

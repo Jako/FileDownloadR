@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2023-06-06
+
+### Added
+
+- Add a chunk for the tpl property of the FileDownloadLink snippet
+- Add system setting filedownloadr.email_props for the FileDownloadEmail plugin
+
+### Fixed
+
+- Add missing mediaSourceId property to the FileDownloadLink snippet [#2]
+- Use only one hash for the same file path
+
+### Changed
+
+- Remove the request properties of FileDownloadR from the referrer to reduce the referrer length.
+- Increase the length of the referrer field in the database
+
 ## [3.0.1] - 2023-06-06
 
 ### Fixed
@@ -20,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Install composer dependencies directly on the server
 - Lexicon entries for all snippet properties
 - Invoke plugins with $modx->invokeEvent
-- FileDownloadR connector and web/file/get processor.
+- FileDownloadR connector and web/file/get processor
 
 ### Fixed
 
@@ -131,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Date sorting with dateFormat parameter [#12]
+- Date sorting with dateFormat property [#12]
 
 ### Changed
 
@@ -207,12 +224,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added @BINDINGs to the tpl parameters
+- Added @BINDINGs to the tpl properties
 - Added template for forbidden access
 
 ### Fixed
 
-- Bugfixed the multiple usage of fileCss parameter
+- Bugfixed the multiple usage of fileCss property
 
 ### Changed
 
@@ -252,7 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added FileDownloadLink snippet for a single file download
 - Added parse template code for FileDownloadLink
-- Added &toArray parameter for both snippets
+- Added &toArray property for both snippets
 
 ## [1.0.0.b1] - 2011-08-25
 

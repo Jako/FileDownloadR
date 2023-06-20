@@ -18,6 +18,7 @@ use modUserGroupMember;
 use modX;
 use TreehillStudio\FileDownloadR\Helper\Parse;
 use xPDO;
+use function GuzzleHttp\Psr7\parse_query;
 
 /**
  * Class FileDownloadR
@@ -46,7 +47,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.0.1';
+    public $version = '3.0.2';
 
     /**
      * The class options
@@ -159,6 +160,7 @@ class FileDownloadR
             'imgTypes' => 'fdimages',
             'encoding' => 'utf-8', // @TODO is this used?
             'exclude_scan' => '.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store',
+            'email_props' => $this->getJsonOption('email_props', [], '')
         ]);
 
         $this->parse = new Parse($modx);
@@ -700,13 +702,10 @@ class FileDownloadR
             }
         }
 
-        $filename = $file['filename'];
-
         $fdlPath = $this->modx->getObject('fdPaths', [
             'ctx' => $file['ctx'],
             'media_source_id' => $this->getOption('mediaSourceId'),
-            'filename' => $filename,
-            'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
+            'filename' => $file['filename']
         ]);
         if (!$fdlPath) {
             if (!$autoCreate) {
@@ -716,7 +715,7 @@ class FileDownloadR
             $fdlPath->fromArray([
                 'ctx' => $file['ctx'],
                 'media_source_id' => $this->getOption('mediaSourceId'),
-                'filename' => $filename,
+                'filename' => $file['filename'],
                 'count' => 0,
                 'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
             ]);
@@ -1290,7 +1289,9 @@ class FileDownloadR
         if (empty($hash) || !$selected) {
             return false;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', ['hash' => $hash]);
+        $fdlPath = $this->modx->getObject('fdPaths', [
+            'hash' => $hash
+        ]);
         if (!$fdlPath) {
             return false;
         }
@@ -1315,7 +1316,9 @@ class FileDownloadR
         if (empty($hash)) {
             return false;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', ['hash' => $hash]);
+        $fdlPath = $this->modx->getObject('fdPaths', [
+            'hash' => $hash
+        ]);
         if (!$fdlPath) {
             return false;
         }
@@ -1454,7 +1457,9 @@ class FileDownloadR
         if (empty($hash)) {
             return false;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', ['hash' => $hash]);
+        $fdlPath = $this->modx->getObject('fdPaths', [
+            'hash' => $hash
+        ]);
         if (!$fdlPath) {
             return false;
         }
@@ -1501,14 +1506,16 @@ class FileDownloadR
         if (!$this->getOption('countDownloads')) {
             return;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', ['hash' => $hash]);
+        $fdlPath = $this->modx->getObject('fdPaths', [
+            'hash' => $hash
+        ]);
         if (!$fdlPath) {
             return;
         }
         // save the new count
         $fdDownload = $this->modx->newObject('fdDownloads');
         $fdDownload->set('path_id', $fdlPath->getPrimaryKey());
-        $fdDownload->set('referer', urldecode($_SERVER['HTTP_REFERER']));
+        $fdDownload->set('referer', $this->getReferrer());
         $fdDownload->set('user', $this->modx->user->get('id'));
         $fdDownload->set('timestamp', time());
         if (!empty($this->getOption('useGeolocation')) && !empty($this->getOption('geoApiKey'))) {
@@ -1555,6 +1562,28 @@ class FileDownloadR
             return $_SERVER['HTTP_X_FORWARDED_FOR'];
         }
         return false;
+    }
+
+    /**
+     * getReferrer
+     *
+     * Returns the referrer without FileDownloadR properties
+     *
+     * @return string - the Referrer or empty
+     */
+    private function getReferrer()
+    {
+        $referrer = '';
+        if (urldecode($_SERVER['HTTP_REFERER'])) {
+            $url = parse_url(urldecode($_SERVER['HTTP_REFERER']));
+            $referrer = ($url['scheme'] ?? '') . '://' . ($url['host'] ?? '') . ($url['path'] ?? '');
+            $query = $url['query'] ?? '';
+            $queryValues = [];
+            parse_str($query, $queryValues);
+            unset($queryValues['fdldir'], $queryValues['fdlfile'], $queryValues['fdldelete']);
+            $referrer .= ($queryValues)? '?' . http_build_query($queryValues) : '';
+        }
+        return $referrer;
     }
 
     /**

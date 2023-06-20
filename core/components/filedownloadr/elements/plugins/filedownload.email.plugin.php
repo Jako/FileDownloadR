@@ -21,8 +21,7 @@ switch ($modx->event->name) {
             'filePath' => $modx->event->params['filePath'],
         ];
         $_REQUEST = $_POST;
-        $emailProps = $filedownloadr->getOption('emailProps');
-        $emailProps = json_decode($emailProps, true);
+        $emailProps = $filedownloadr->getOption('email_props');
         $formitProps = array_merge(['hooks' => 'email'], $emailProps ?? []);
         $runFormit = $modx->runSnippet('FormIt', $formitProps);
         if ($runFormit === false) {

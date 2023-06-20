@@ -81,6 +81,7 @@ $_lang['filedownloadr.filedownloadlink.fileJs'] = 'Pfad einer JavaScript-Datei, 
 $_lang['filedownloadr.filedownloadlink.getFile'] = 'Geben Sie die Datei an, die in der Snippet-Ausgabe angezeigt wird.';
 $_lang['filedownloadr.filedownloadlink.imgLocat'] = 'Pfad zu den Bildern, die mit jeder Dateierweiterung verbunden sind. Die Bilder werden im Platzhalter [[+fd.image]] ausgegeben.';
 $_lang['filedownloadr.filedownloadlink.imgTypes'] = 'Name eines Chunks, der die Zuordnung zwischen Dateierweiterungen und und Bildern enthält.';
+$_lang['filedownloadr.filedownloadlink.mediaSourceId'] = 'Die Dateien und Verzeichnisse werden relativ zum Basispfad der angegebenen Medienquelle gesucht.';
 $_lang['filedownloadr.filedownloadlink.noDownload'] = 'Nur Dateien ohne Download-Link in der Liste anzeigen.';
 $_lang['filedownloadr.filedownloadlink.prefix'] = 'Präfix für die Platzhalter in den Template-Chunks.';
 $_lang['filedownloadr.filedownloadlink.saltText'] = 'Mit diesem Text wird der Dateipfad erweitert, um individuelle Hashes für den Dateidownload erstellen zu können.';

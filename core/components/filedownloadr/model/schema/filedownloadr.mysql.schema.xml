@@ -11,7 +11,7 @@
     <object class="fdDownloads" table="fd_downloads" extends="xPDOSimpleObject">
         <field key="path_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false"/>
         <field key="ip" dbtype="varchar" precision="46" phptype="string" null="false" default="0.0.0.0"/>
-        <field key="referer" dbtype="varchar" precision="255" phptype="string" null="true" default=""/>
+        <field key="referer" dbtype="text" phptype="string" null="true"/>
         <field key="country" dbtype="varchar" precision="255" phptype="string" null="true" default=""/>
         <field key="region" dbtype="varchar" precision="255" phptype="string" null="true" default=""/>
         <field key="city" dbtype="varchar" precision="255" phptype="string" null="true" default=""/>

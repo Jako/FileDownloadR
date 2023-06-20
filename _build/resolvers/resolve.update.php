@@ -49,6 +49,30 @@ if ($object->xpdo) {
         }
     }
 
+    function removeDuplicates(modX $modx)
+    {
+        $c = $modx->newQuery('fdPaths');
+        $c->innerJoin('fdPaths', 'Paths', [
+            'fdPaths.ctx = Paths.ctx',
+            'fdPaths.media_source_id = Paths.media_source_id',
+            'fdPaths.filename = Paths.filename',
+        ]);
+        $c->where([
+            'fdPaths.id < Paths.id',
+        ]);
+        $i = 0;
+        $duplicateCollection = $modx->getCollection('fdPaths', $c);
+        foreach ($duplicateCollection as $duplicate) {
+            $duplicate->remove();
+            $i++;
+        }
+        return $i;
+    }
+
+    $modx =& $object->xpdo;
+    removeDuplicates($modx);
+
+
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_UPGRADE:
             /** @var modX $modx */
@@ -85,14 +109,19 @@ if ($object->xpdo) {
                 if ($oldPackage->compareVersion('2.0.0-beta1', '>')) {
                     $count = $modx->getCount('fdCount');
                     if ($count > 0) {
-                        $modx->log(xPDO::LOG_LEVEL_INFO, "Starting to convert the database...", '', 'FileDownloadR');
+                        $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to convert the database...', '', 'FileDownloadR');
                         $split = ceil($count / 1000); // limit
                         for ($index = 0; $index < $split; $index++) {
                             $offset = $index * 10;
                             convertCount($modx, $offset);
                         }
-                        $modx->log(xPDO::LOG_LEVEL_INFO, "Conversion is finished!", '', 'FileDownloadR');
+                        $modx->log(xPDO::LOG_LEVEL_INFO, 'Conversion is finished!', '', 'FileDownloadR');
                     }
+                }
+                if ($oldPackage->compareVersion('2.0.2', '>')) {
+                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to remove duplicate file paths in the database...', '', 'FileDownloadR');
+                    $count = removeDuplicates($modx);
+                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Removed ' . $count . ' duplicate file paths!', '', 'FileDownloadR');
                 }
             }
             break;

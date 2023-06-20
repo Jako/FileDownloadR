@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Display a list of downloadable files without revealing the file url.",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "package": {
     "elements": {
       "snippets": [
@@ -346,6 +346,10 @@
               "value": "fdImages"
             },
             {
+              "name": "mediaSourceId",
+              "value": "0"
+            },
+            {
               "name": "noDownload",
               "type": "combo-boolean",
               "value": "0"
@@ -404,54 +408,59 @@
           "file": "filedescription.chunk.txt"
         },
         {
-          "name": "FileDownloadEmailChunk",
+          "name": "fdEmailChunk",
           "description": "Email chunk for FileDownload's plugin",
-          "file": "filedownloademail.chunk.html"
+          "file": "email.chunk.html"
         },
         {
           "name": "fdBreadcrumbTpl",
           "description": "Template for breadcrumb item",
-          "file": "tpl-breadcrumb.chunk.html"
+          "file": "breadcrumb.chunk.html"
         },
         {
           "name": "fdGroupDirTpl",
           "description": "Template of the directory path if groupByDirectory is enabled",
-          "file": "tpl-group-dir.chunk.html"
+          "file": "groupdir.chunk.html"
         },
         {
           "name": "fdIndexTpl",
           "description": "Template for a generated index.html file to cover up the directory from direct web access",
-          "file": "tpl-index.chunk.html"
+          "file": "index.chunk.html"
         },
         {
           "name": "fdNotAllowedTpl",
           "description": "Template for forbidden access",
-          "file": "tpl-notallowed.chunk.html"
+          "file": "notallowed.chunk.html"
         },
         {
           "name": "fdRowDirTpl",
           "description": "Template for a directory row",
-          "file": "tpl-row-dir.chunk.html"
+          "file": "rowdir.chunk.html"
         },
         {
           "name": "fdRowFileTpl",
           "description": "Template for a file row",
-          "file": "tpl-row-file.chunk.html"
+          "file": "rowfile.chunk.html"
         },
         {
           "name": "fdWrapperTpl",
           "description": "Container template for the snippet results",
-          "file": "tpl-wrapper.chunk.html"
+          "file": "wrapper.chunk.html"
         },
         {
           "name": "fdWrapperDirTpl",
           "description": "Optional container template for folders",
-          "file": "tpl-wrapper-dir.chunk.html"
+          "file": "wrapperdir.chunk.html"
         },
         {
           "name": "fdWrapperFileTpl",
           "description": "Optional container template for files",
-          "file": "tpl-wrapper-file.chunk.html"
+          "file": "wrapperfile.chunk.html"
+        },
+        {
+          "name": "fdSingleFileTpl",
+          "description": "Template for a single file",
+          "file": "singlefile.chunk.html"
         }
       ]
     },
@@ -472,6 +481,12 @@
         "key": "ipinfodb_api_key",
         "type": "textfield",
         "area": "geolocation",
+        "value": ""
+      },
+      {
+        "key": "email_props",
+        "type": "textfield",
+        "area": "email",
         "value": ""
       }
     ]
