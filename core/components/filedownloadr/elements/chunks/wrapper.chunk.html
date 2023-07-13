@@ -1,13 +1,24 @@
+[[+fd.error:notempty=`<p class="fd-error">[[+fd.error]]</p>`]]
+[[+uploadFile:notempty=`
+<form class="fd-upload-form" action="[[+fd.uploadUrl]]" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="fdmaxfilesize" value="[[+uploadMaxSize]]">
+    <label class="fd-file-label">[[%filedownloadr.upload_text? &extensions=`[[+fd.uploadFileExtensions]]` &namespace=`filedownloadr`]]</label>
+    <div class="fd-file-container">
+        <input name="fdupload" type="file" accept="[[+fd.uploadFileTypes]]">
+    </div>
+    <button class="fd-file-button">[[%filedownloadr.upload_button? &namespace=`filedownloadr`]]</button>
+</form>
+`]]
 <table class="fd-table table">
     [[+fd.path:notempty=`
     <tr [[+fd.classPath]]>
-        <th colspan="4"><strong>Path: [[+fd.path]]</strong></th>
+        <th colspan="4"><strong>[[%filedownloadr.path? &namespace=`filedownloadr`]]: [[+fd.path]]</strong></th>
     </tr>
     `]]
     <tr class="fd-header">
-        <th><strong>Filename</strong></th>
-        <th><strong>Filesize</strong></th>
-        <th><strong>Date</strong></th>
+        <th><strong>[[%filedownloadr.file_name? &namespace=`filedownloadr`]]</strong></th>
+        <th><strong>[[%filedownloadr.file_size? &namespace=`filedownloadr`]]</strong></th>
+        <th><strong>[[%filedownloadr.file_date? &namespace=`filedownloadr`]]</strong></th>
         <th></th>
     </tr>
     [[+fd.rows]]

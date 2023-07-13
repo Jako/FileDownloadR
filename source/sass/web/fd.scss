@@ -1,3 +1,58 @@
+.fd-error {
+  padding: 10px;
+  display: block;
+  width: 100%;
+  background: firebrick;
+  color: white;
+}
+
+.fd-upload-form {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+
+  .fd-file-label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .fd-file-container {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  input[type=file] {
+    display: block;
+    &::file-selector-button {
+      background-color: #fff;
+      color: #000;
+      border: 0;
+      border-right: 1px solid #ccc;
+      padding: 5px 10px;
+      margin-right: 20px;
+      transition: .5s;
+    }
+    &::file-selector-button:hover {
+      background-color: #eee;
+      border: 0;
+      border-right: 1px solid #ccc;
+    }
+  }
+  .fd-file-button {
+    display: block;
+    background-color: firebrick;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    transition: .5s;
+    &:hover {
+      background-color: darken(firebrick, 10%);
+    }
+  }
+
+
+}
+
 table.fd-table {
   width: 100%;
   .fd-header {
@@ -31,7 +86,7 @@ table.fd-table {
     }
   }
   .fd-xlsx {
-    background-color: #E3D1E6;
+    background-color: #e3d1e6;
   }
   &.no-border, &.no-border > tr, &.no-border > tr > td {
     border: none;

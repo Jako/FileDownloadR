@@ -27,7 +27,7 @@ function createEvent(xPDO &$modx, $name, $service = 0)
         $event->fromArray([
             'name' => $name,
             'service' => $service,
-            'groupname' => 'Agenda'
+            'groupname' => 'FileDownloadR'
         ], '', true, true);
         if ($event->save()) {
             $modx->log(xPDO::LOG_LEVEL_INFO, 'System event "' . $name . '" was created.');
@@ -39,7 +39,7 @@ function createEvent(xPDO &$modx, $name, $service = 0)
         $event->fromArray([
             'name' => $name,
             'service' => $service,
-            'groupname' => 'Agenda'
+            'groupname' => 'FileDownloadR'
         ], '', true, true);
         if ($event->save()) {
             $modx->log(xPDO::LOG_LEVEL_INFO, 'System event "' . $name . '" was updated.');
@@ -80,6 +80,8 @@ $events = [
     'OnFileDownloadAfterDirOpen',
     'OnFileDownloadBeforeFileDownload',
     'OnFileDownloadAfterFileDownload',
+    'OnFileDownloadBeforeFileUpload',
+    'OnFileDownloadAfterFileUpload',
 ];
 
 /** @var xPDO $modx */

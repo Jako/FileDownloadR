@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - TBA
+
+### Added
+
+- Upload a file in the current directory
+- New uploadFile, uploadFileTypes, uploadGroups and uploadMaxSize property in FileDownload snippet
+- New property countUserDownloads in FileDownload and FileDownloadLink snippets
+- New placeholders count, count_not, count_user and count_user_not in the directory row template counting in all subdirectories
+- getDir property can be empty when using mediasources
+- New FileDownloadCount snippet for retrieving the download counts of a directory and its subdirectories
+
+### Changed
+
+- Reduce database queries if the download count is not enabled
+
+### Fixed
+
+- Fix browsing while using mediasources
+
 ## [3.0.2] - 2023-06-06
 
 ### Added
@@ -81,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Show empty folder [#42]
+- Show empty directory [#42]
 - Add media source support [#17][#29]
 - Add geolocation support
 
@@ -95,14 +114,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update build of fd_count, convert database [#43]
-- Rename folder
+- Rename directory
 
 ## [1.1.9] - 2014-12-18
 
 ### Fixed
 
 - Fix imageTypes
-- Fixed to allow files to download within folders with Revo 2.3.2 [#39]
+- Fixed to allow files to download within directories with Revo 2.3.2 [#39]
 
 ### Changed
 
@@ -125,7 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed [[+fd.image]] only outputs the path to "assets/components/filedownloadr/img/filetypes/" without any file of the folder [#21]
+- Fixed [[+fd.image]] only outputs the path to "assets/components/filedownloadr/img/filetypes/" without any file of the
+  directory [#21]
 
 ## [1.1.6] - 2013-07-01
 
@@ -152,7 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Rename folders to follow the namespace
+- Rename directories to follow the namespace
 
 ## [1.1.3] - 2013-01-02
 
@@ -201,7 +221,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added &tplWrapperDir and &tplWrapperFile properties to provide separated wrapper templates between folders and files.
+- Added &tplWrapperDir and &tplWrapperFile properties to provide separated wrapper templates between directories and files.
 
 ## [1.0.0.rc4] - 2021-04-30
 
@@ -218,7 +238,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Bugfixed fatal error caused by an empty folder
+- Bugfixed fatal error caused by an empty directory
 
 ## [1.0.0.rc2] - 2012-02-25
 

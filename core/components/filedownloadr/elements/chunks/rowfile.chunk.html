@@ -4,11 +4,16 @@
             <img src="[[+fd.image]]" alt=""/>
         </span>
         <a href="[[+fd.url]]">[[+fd.filename]]</a>
-        <span style="font-size:80%">([[+fd.count]] downloads)</span>
+        [[+countDownloads:notempty=`
+        <span style="font-size:80%">([[+fd.count:eq=`1`:then=`[[%filedownloadr.file_count? &count=`[[+fd.count]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.file_counts? &count=`[[+fd.count]]` &namespace=`filedownloadr`]]`]])</span>
+        `]]
+        [[+countUserDownloads:notempty=`
+        <span style="font-size:80%">([[+fd.count_user:eq=`1`:then=`[[%filedownloadr.file_count_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.file_counts_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`]])</span>
+        `]]
     </td>
     <td>[[+fd.sizeText]]</td>
     <td>[[+fd.date]]</td>
-    <td>[[+fd.deleteurl:notempty=`<a href="[[+fd.deleteurl]]">Delete</a>`]]</td>
+    <td>[[+fd.deleteurl:notempty=`<a href="[[+fd.deleteurl]]">[[%filedownloadr.delete]]</a>`]]</td>
 </tr>
 [[-- This is the description row if the &chkDesc=`chunkName` is provided --]]
 [[+fd.description:notempty=`

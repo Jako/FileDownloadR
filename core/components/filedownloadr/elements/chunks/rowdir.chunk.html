@@ -4,5 +4,13 @@
             <img src="[[+fd.image]]" alt=""/>
         </span>
         <a href="[[+fd.url]]">[[+fd.filename]]</a>
+        [[+countDownloads:notempty=`
+        <span style="font-size:80%">([[+fd.count:eq=`1`:then=`[[%filedownloadr.dir_count? &count=`[[+fd.count]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.dir_counts? &count=`[[+fd.count]]` &namespace=`filedownloadr`]]`]])</span>
+        <span style="font-size:80%">([[+fd.count_not:eq=`1`:then=`[[%filedownloadr.dir_count_not? &count=`[[+fd.count_not]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.dir_counts_not? &count=`[[+fd.count_not]]` &namespace=`filedownloadr`]]`]])</span>
+        `]]
+        [[+countUserDownloads:notempty=`
+        <span style="font-size:80%">([[+fd.count_user:eq=`1`:then=`[[%filedownloadr.dir_count_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.dir_counts_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`]])</span>
+        <span style="font-size:80%">([[+fd.count_user_not:eq=`1`:then=`[[%filedownloadr.dir_count_user_not? &count=`[[+fd.count_user_not]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.dir_counts_user_not? &count=`[[+fd.count_user_not]]` &namespace=`filedownloadr`]]`]])</span>
+        `]]
     </td>
 </tr>

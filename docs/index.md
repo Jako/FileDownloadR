@@ -13,4 +13,4 @@ This MODX Extra can be used to display a list of files from a directory. The
 download link for each file is hashed. This way, the full url of the file will
 not be revealed and the files/directories can be located outside the webroot.
 Each file can also be assigned a download counter, which is stored in a custom
-database table.
+database table. A single file can be uploaded using an upload form.

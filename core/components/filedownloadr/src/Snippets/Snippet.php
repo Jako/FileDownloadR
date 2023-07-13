@@ -92,7 +92,18 @@ abstract class Snippet
             }
             unset($properties[$parts[0]]);
         }
+        $result = $this->replacePathProperties($result);
         return array_merge($result, $properties);
+    }
+
+    /**
+     * Replace the property's placeholders
+     * @param string|array $subject Property
+     * @return string|array The replaced results
+     */
+    public function replacePathProperties($subject)
+    {
+        return $this->filedownloadr->replacePathProperties($subject);
     }
 
     /**

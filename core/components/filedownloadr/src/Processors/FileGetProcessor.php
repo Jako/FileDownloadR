@@ -15,7 +15,7 @@ abstract class FileGetProcessor extends Processor
 {
     public function process()
     {
-        $this->filedownloadr->setConfigs([
+        $this->filedownloadr->initConfig([
             'countDownloads' => true
         ]);
         $downloadFile = $this->filedownloadr->downloadFile($this->getProperty('link'));

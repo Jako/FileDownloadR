@@ -8,8 +8,6 @@
 
 namespace TreehillStudio\FileDownloadR\Snippets;
 
-use xPDO;
-
 /**
  * Class FileDownloadSnippet
  */
@@ -30,6 +28,7 @@ class FileDownloadSnippet extends Snippet
             'browseDirectories::bool' => false,
             'chkDesc' => '',
             'countDownloads::bool' => true,
+            'countUserDownloads::bool' => false,
             'cssAltRow' => 'fd-alt',
             'cssDir' => 'fd-dir',
             'cssExtension::bool' => false,
@@ -49,13 +48,13 @@ class FileDownloadSnippet extends Snippet
             'extHidden' => '',
             'extShown' => '',
             'fdlid' => '',
-            'fileCss' => $this->filedownloadr->getOption('assets_url') . 'css/fd.min.css',
+            'fileCss' => '{fd_assets_url}css/fd.min.css',
             'fileJs' => '',
             'geoApiKey' => $this->filedownloadr->getOption('ipinfodb_api_key'),
             'getDir' => '',
             'getFile' => '',
             'groupByDirectory::bool' => false,
-            'imgLocat' => $this->filedownloadr->getOption('assets_url') . 'img/filetypes/',
+            'imgLocat' => '{fd_assets_url}img/filetypes/',
             'imgTypes' => 'fdImages',
             'mediaSourceId::int' => 0,
             'noDownload::bool' => false,
@@ -76,6 +75,10 @@ class FileDownloadSnippet extends Snippet
             'tplWrapper' => 'fdWrapperTpl',
             'tplWrapperDir' => '',
             'tplWrapperFile' => '',
+            'uploadFile::bool' => false,
+            'uploadFileTypes::explodeSeparated' => 'image/gif,image/jpeg,image/png',
+            'uploadGroups' => '',
+            'uploadMaxSize::int' => 2000000,
             'useGeolocation::bool' => $this->filedownloadr->getOption('use_geolocation'),
             'userGroups' => '',
         ];
@@ -88,74 +91,61 @@ class FileDownloadSnippet extends Snippet
      */
     public function execute()
     {
-        $this->filedownloadr->setConfigs($this->getProperties());
-        $this->filedownloadr->setOption('origDir', $this->filedownloadr->getOption('getDir'));
+        $this->filedownloadr->initConfig($this->getProperties());
 
         if (!$this->filedownloadr->isAllowed()) {
             return $this->filedownloadr->parse->getChunk($this->getProperty('tplNotAllowed'), $this->getProperties());
         }
         if ($this->getProperty('fileCss') !== 'disabled') {
-            $this->modx->regClientCSS($this->filedownloadr->replacePropPhs($this->getProperty('fileCss')));
+            $this->modx->regClientCSS($this->getProperty('fileCss'));
         }
         if ($this->getProperty('ajaxMode') && !empty($this->getProperty('ajaxControllerPage'))) {
             if ($this->getProperty('fileJs') !== 'disabled') {
-                $this->modx->regClientStartupScript($this->filedownloadr->replacePropPhs($this->getProperty('fileJs')));
+                $this->modx->regClientStartupScript($this->getProperty('fileJs'));
             }
         }
 
-        if (!empty($_GET['fdldir']) || !empty($_GET['fdlfile']) || !empty($_GET['fdldelete'])) {
-            $ref = $_SERVER['HTTP_REFERER'];
-            // deal with multiple snippets which have &browseDirectories
-            $xRef = @explode('?', $ref);
-            $queries = [];
-            parse_str($xRef[1], $queries);
-            if (!empty($queries['id'])) {
-                // non FURL
-                $baseRef = $xRef[0] . '?id=' . $queries['id'];
-            } else {
-                $baseRef = $xRef[0];
-            }
-            $baseRef = urldecode($baseRef);
-            $page = $this->modx->makeUrl($this->modx->resource->get('id'), '', '', 'full');
-            // check referrer and the page
-            if ($baseRef !== $page) {
-                $this->modx->sendUnauthorizedPage();
-            }
+        // Check the referrer if a file is downloaded or deleted
+        if (!empty($_GET['fdlfile']) || !empty($_GET['fdldelete'])) {
+            $this->filedownloadr->checkReferrer();
         }
 
         if (!$this->getProperty('downloadByOther')) {
             $sanitizedGets = $this->modx->sanitize($_GET);
+            $checked = $this->checkFileDownloadId($sanitizedGets['fdlid'] ?? '');
             if (!empty($sanitizedGets['fdlfile'])) {
-                if (!$this->filedownloadr->checkHash($this->modx->context->key, $sanitizedGets['fdlfile'])) {
-                    return '';
+                // Download file
+                $file = $sanitizedGets['fdlfile'];
+                if ($this->filedownloadr->checkHash($this->modx->context->key, $file)) {
+                    $this->filedownloadr->downloadFile($file);
+                    // Simply terminate, because this is a downloading state
+                    @session_write_close();
+                    exit();
                 }
-                if (!$this->filedownloadr->downloadFile($sanitizedGets['fdlfile'])) {
-                    return '';
-                }
-                // simply terminate, because this is a downloading state
-                @session_write_close();
-                exit();
-            } elseif (!empty($sanitizedGets['fdldir'])) {
-                if (!$this->filedownloadr->checkHash($this->modx->context->key, $sanitizedGets['fdldir'])) {
-                    return '';
-                }
-                if ((!empty($sanitizedGets['fdlid']) && !empty($this->getProperty('fdlid'))) &&
-                    ($sanitizedGets['fdlid'] != $this->getProperty('fdlid'))
-                ) {
-                    $selected = false;
-                } else {
-                    $selected = true;
-                }
-                if ($selected) {
-                    if (!$this->filedownloadr->setDirProp($sanitizedGets['fdldir'], $selected)) {
-                        return '';
-                    }
-                }
+                return '';
             } elseif (!empty($sanitizedGets['fdldelete'])) {
-                if (!$this->filedownloadr->checkHash($this->modx->context->key, $sanitizedGets['fdldelete'])) {
+                // Delete file
+                $delete = $sanitizedGets['fdldelete'];
+                if ($this->filedownloadr->checkHash($this->modx->context->key, $delete)) {
+                    $this->filedownloadr->deleteFile($delete);
+                }
+            }
+
+            if (!empty($sanitizedGets['fdldir'])) {
+                $directory = $sanitizedGets['fdldir'];
+                if ($this->filedownloadr->checkHash($this->modx->context->key, $directory)) {
+                    if ($checked) {
+                        if (!$this->filedownloadr->setDirectory($directory)) {
+                            return '';
+                        }
+                    }
+                } else {
                     return '';
                 }
-                $this->filedownloadr->deleteFile($sanitizedGets['fdldelete']);
+            }
+
+            if ($this->getProperty('uploadFile') && !empty($_POST) && $checked) {
+                $this->filedownloadr->uploadFile();
             }
         }
 
@@ -167,7 +157,7 @@ class FileDownloadSnippet extends Snippet
         if ($this->getProperty('toArray')) {
             $output = '<pre>' . print_r($contents, true) . '</pre>';
         } else {
-            $output = $this->filedownloadr->parseTemplate();
+            $output = $this->filedownloadr->listContents();
         }
 
         if (!empty($toPlaceholder)) {
@@ -175,5 +165,23 @@ class FileDownloadSnippet extends Snippet
             return '';
         }
         return $output;
+    }
+
+    /**
+     * Check FileDownloadId for multiple FileDownload snippets on one page
+     *
+     * @param string $fileDownloadId
+     * @return bool
+     */
+    private function checkFileDownloadId(string $fileDownloadId)
+    {
+        $selected = true;
+        if (!empty($fileDownloadId) &&
+            !empty($this->getProperty('fdlid')) &&
+            ($fileDownloadId != $this->getProperty('fdlid'))
+        ) {
+            $selected = false;
+        }
+        return $selected;
     }
 }

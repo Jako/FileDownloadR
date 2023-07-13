@@ -1,3 +1,53 @@
+.fd-error {
+  padding: 10px;
+  display: block;
+  width: 100%;
+  background: firebrick;
+  color: white;
+}
+
+.fd-upload-form {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.fd-upload-form .fd-file-label {
+  display: block;
+  margin-bottom: 10px;
+}
+.fd-upload-form .fd-file-container {
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+.fd-upload-form input[type=file] {
+  display: block;
+}
+.fd-upload-form input[type=file]::file-selector-button {
+  background-color: #fff;
+  color: #000;
+  border: 0;
+  border-right: 1px solid #ccc;
+  padding: 5px 10px;
+  margin-right: 20px;
+  transition: 0.5s;
+}
+.fd-upload-form input[type=file]::file-selector-button:hover {
+  background-color: #eee;
+  border: 0;
+  border-right: 1px solid #ccc;
+}
+.fd-upload-form .fd-file-button {
+  display: block;
+  background-color: firebrick;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  transition: 0.5s;
+}
+.fd-upload-form .fd-file-button:hover {
+  background-color: #871a1a;
+}
+
 table.fd-table {
   width: 100%;
 }
@@ -18,7 +68,7 @@ table.fd-table tr td {
   padding: 5px;
 }
 table.fd-table .fd-xlsx {
-  background-color: #E3D1E6;
+  background-color: #e3d1e6;
 }
 table.fd-table.no-border, table.fd-table.no-border > tr, table.fd-table.no-border > tr > td {
   border: none;

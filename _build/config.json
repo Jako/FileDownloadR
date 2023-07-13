@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Display a list of downloadable files without revealing the file url.",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "package": {
     "elements": {
       "snippets": [
@@ -43,6 +43,11 @@
               "name": "countDownloads",
               "type": "combo-boolean",
               "value": "1"
+            },
+            {
+              "name": "countUserDownloads",
+              "type": "combo-boolean",
+              "value": "0"
             },
             {
               "name": "cssAltRow",
@@ -284,6 +289,23 @@
               "value": ""
             },
             {
+              "name": "uploadFile",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "uploadFileTypes",
+              "value": "image/gif,image/jpeg,image/png"
+            },
+            {
+              "name": "uploadGroups",
+              "value": ""
+            },
+            {
+              "name": "uploadMaxSize",
+              "value": "2000000"
+            },
+            {
               "name": "userGroups",
               "value": ""
             }
@@ -315,6 +337,11 @@
               "name": "countDownloads",
               "type": "combo-boolean",
               "value": "1"
+            },
+            {
+              "name": "countUserDownloads",
+              "type": "combo-boolean",
+              "value": "0"
             },
             {
               "name": "dateFormat",
@@ -363,12 +390,71 @@
               "value": "FileDownload"
             },
             {
+              "name": "toArray",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
               "name": "tpl",
-              "value": "@CODE <a href=\"[[+link]]\">[[+filename]]</a>"
+              "value": "fdSingleFileTpl"
             },
             {
               "name": "tplNotAllowed",
               "value": "fdNotAllowedTpl"
+            },
+            {
+              "name": "userGroups",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "name": "FileDownloadCount",
+          "description": "Snippet to count downloadable files in a directory.",
+          "file": "filedownloadcount.snippet.php",
+          "properties": [
+            {
+              "name": "countDownloads",
+              "type": "combo-boolean",
+              "value": "1"
+            },
+            {
+              "name": "countUserDownloads",
+              "type": "combo-boolean",
+              "value": "1"
+            },
+            {
+              "name": "fileCss",
+              "value": ""
+            },
+            {
+              "name": "fileJs",
+              "value": ""
+            },
+            {
+              "name": "getDir",
+              "value": ""
+            },
+            {
+              "name": "mediaSourceId",
+              "value": "0"
+            },
+            {
+              "name": "prefix",
+              "value": "fd."
+            },
+            {
+              "name": "saltText",
+              "value": "FileDownload"
+            },
+            {
+              "name": "toArray",
+              "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "tpl",
+              "value": "fdSingleDirTpl"
             },
             {
               "name": "userGroups",
@@ -449,7 +535,7 @@
         },
         {
           "name": "fdWrapperDirTpl",
-          "description": "Optional container template for folders",
+          "description": "Optional container template for directories",
           "file": "wrapperdir.chunk.html"
         },
         {
@@ -461,6 +547,11 @@
           "name": "fdSingleFileTpl",
           "description": "Template for a single file",
           "file": "singlefile.chunk.html"
+        },
+        {
+          "name": "fdSingleDirTpl",
+          "description": "Template for a single directory",
+          "file": "singledir.chunk.html"
         }
       ]
     },
@@ -522,6 +613,7 @@
       "after": [
         "resolve.composer.php",
         "resolve.synctables.php",
+        "resolve.events.php",
         "resolve.update.php",
         "resolve.treehillstudio.php"
       ]
