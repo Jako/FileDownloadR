@@ -300,6 +300,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#filedownloadcount" class="md-nav__link">
+    FileDownloadCount
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -417,6 +424,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#filedownloadcount" class="md-nav__link">
+    FileDownloadCount
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -463,7 +477,7 @@
   <h1>Usage</h1>
 
 <h2 id="snippets">Snippets</h2>
-<p>There are two snippets included in the package.</p>
+<p>There are three snippets included in the package.</p>
 <h3 id="filedownload">FileDownload</h3>
 <p>This snippet will display a list of files from one or multiple directories. It uses the following properties:</p>
 <table>
@@ -509,6 +523,11 @@
 <td>countDownloads</td>
 <td>Enable the download count in the database.</td>
 <td>1 (Yes)</td>
+</tr>
+<tr>
+<td>countUserDownloads</td>
+<td>Enable the download count by user in the database.</td>
+<td>0 (No)</td>
 </tr>
 <tr>
 <td>cssAltRow</td>
@@ -567,7 +586,7 @@
 </tr>
 <tr>
 <td>cssPath</td>
-<td>This class that will be added to the path when using directory browsing in the template chunks.</td>
+<td>This class that will be added to the path in the template chunks when using directory browsing.</td>
 <td>fd-path</td>
 </tr>
 <tr>
@@ -602,7 +621,7 @@
 </tr>
 <tr>
 <td>fileCss</td>
-<td>Path of a CSS file that is registered in the HTML output in the frontend.</td>
+<td>Path of a CSS file that is registered in the HTML output in the frontend. Set to disabled, to disable the registering.</td>
 <td>-</td>
 </tr>
 <tr>
@@ -627,22 +646,22 @@
 </tr>
 <tr>
 <td>imgLocat</td>
-<td>Path to the images associated with each file extension. The images are output with the placeholder [[+fd.image]].</td>
+<td>Path to the images associated with each file extension. The images are output in the [[+fd.image]] placeholder.</td>
 <td>-</td>
 </tr>
 <tr>
 <td>imgTypes</td>
-<td>Name of a chunk that contains the associations between file extensions and and images.</td>
+<td>Name of a chunk that contains the association between file extensions and and images.</td>
 <td>fdImages</td>
 </tr>
 <tr>
 <td>mediaSourceId</td>
-<td>Locate the files and directories relative to the media source base path.</td>
+<td>The files and directories are searched relative to the base path of the specified media source.</td>
 <td>-</td>
 </tr>
 <tr>
 <td>noDownload</td>
-<td>Disable the download link This property will make the list only displays files without their download links.</td>
+<td>If you enable this property, files will be displayed without download link in the list.</td>
 <td>0 (No)</td>
 </tr>
 <tr>
@@ -731,13 +750,101 @@
 <td>-</td>
 </tr>
 <tr>
+<td>uploadFile</td>
+<td>Enable the file upload.</td>
+<td>0 (No)</td>
+</tr>
+<tr>
+<td>uploadFileTypes</td>
+<td>Comma separated list of mime types or extensions to restrict the upload.</td>
+<td>image/gif,image/jpeg,image/png</td>
+</tr>
+<tr>
+<td>uploadGroups</td>
+<td>Show the file upload for users that belong to the specified groups.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>uploadMaxSize</td>
+<td>Maximum upload size in bytes.</td>
+<td>2000000</td>
+</tr>
+<tr>
 <td>userGroups</td>
-<td>Show the file list for users that belong to the specified groups. Users that don't belong to these groups or that are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.</td>
+<td>This will show the file list for users that belong to the specified groups. Users that don't not belong to this group or are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.</td>
 <td>-</td>
 </tr>
 </tbody>
 </table>
 <p>To use the <code>downloadByOther</code> property of the FileDownload snippet, you can read the <a href="../ajax/">AJAX example usage</a></p>
+<h3 id="filedownloadcount">FileDownloadCount</h3>
+<p>This snippet will display the download count of one directory. It uses the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>countDownloads</td>
+<td>Enable the download count in the database.</td>
+<td>1 (Yes)</td>
+</tr>
+<tr>
+<td>countUserDownloads</td>
+<td>Enable the download count by user in the database.</td>
+<td>1 (Yes)</td>
+</tr>
+<tr>
+<td>fileCss</td>
+<td>Path of a CSS file that is registered in the HTML output in the frontend. Set to disabled, to disable the registering.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>fileJs</td>
+<td>Path of a JavaScript file that is registered in the HTML output in the frontend.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>getDir</td>
+<td>Specify the directory displayed in the snippet output.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>mediaSourceId</td>
+<td>The files and directories are searched relative to the base path of the specified media source.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>prefix</td>
+<td>Prefix for the placeholders in the template chunks.</td>
+<td>fd.</td>
+</tr>
+<tr>
+<td>saltText</td>
+<td>With this text the file path will be extended to be able to create individual hashes for the file download.</td>
+<td>FileDownload</td>
+</tr>
+<tr>
+<td>toArray</td>
+<td>Returns the snippet result with print_r without parsing the templates.</td>
+<td>0 (No)</td>
+</tr>
+<tr>
+<td>tpl</td>
+<td>Name of a chunk that is used as a download link template. @BINDING is possible (@INLINE/@FILE/@CHUNK).</td>
+<td>fdSingleDirTpl</td>
+</tr>
+<tr>
+<td>userGroups</td>
+<td>This will show the file list for users that belong to the specified groups. Users that don't not belong to this group or are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 <h2 id="filedownloadlink">FileDownloadLink</h2>
 <p>This snippet will display a single download link for one file. It uses the following properties:</p>
 <table>
@@ -775,6 +882,11 @@
 <td>1 (Yes)</td>
 </tr>
 <tr>
+<td>countUserDownloads</td>
+<td>Enable the download count by user in the database.</td>
+<td>0 (No)</td>
+</tr>
+<tr>
 <td>dateFormat</td>
 <td>PHP date format for each file in the output.</td>
 <td>Y-m-d</td>
@@ -786,7 +898,7 @@
 </tr>
 <tr>
 <td>fileCss</td>
-<td>Path of a CSS file that is registered in the HTML output in the frontend.</td>
+<td>Path of a CSS file that is registered in the HTML output in the frontend. Set to disabled, to disable the registering.</td>
 <td>-</td>
 </tr>
 <tr>
@@ -810,8 +922,13 @@
 <td>fdImages</td>
 </tr>
 <tr>
+<td>mediaSourceId</td>
+<td>The files and directories are searched relative to the base path of the specified media source.</td>
+<td>-</td>
+</tr>
+<tr>
 <td>noDownload</td>
-<td>Disable the download link This property will make the list only displays files without their download links.</td>
+<td>Display only files without their download link in the list.</td>
 <td>0 (No)</td>
 </tr>
 <tr>
@@ -825,9 +942,14 @@
 <td>FileDownload</td>
 </tr>
 <tr>
+<td>toArray</td>
+<td>Returns the snippet result with print_r without parsing the templates.</td>
+<td>0 (No)</td>
+</tr>
+<tr>
 <td>tpl</td>
 <td>Name of a chunk that is used as a download link template. @BINDING is possible (@INLINE/@FILE/@CHUNK).</td>
-<td><code>@CODE &lt;a href="[[+link]]"&gt;[[+filename]]&lt;/a&gt;</code></td>
+<td>fdSingleFileTpl</td>
 </tr>
 <tr>
 <td>tplNotAllowed</td>
@@ -836,7 +958,7 @@
 </tr>
 <tr>
 <td>userGroups</td>
-<td>This will show the download link for users that belong to the specified groups. Users that don't not belong to this group or are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.</td>
+<td>Show the file list for users that belong to the specified groups. Users that don't belong to these groups or that are not logged in will receive a message specified in the tplNotAllowed property. Multiple groups can be specified by using a comma-separated list.</td>
 <td>-</td>
 </tr>
 </tbody>
@@ -854,6 +976,12 @@
 </thead>
 <tbody>
 <tr>
+<td>filedownloadr.email_props</td>
+<td>Email Properties</td>
+<td>JSON encoded array of email properties for the FileDownloadEmail plugin.</td>
+<td>-</td>
+</tr>
+<tr>
 <td>filedownloadr.exclude_scan</td>
 <td>Exclude files</td>
 <td>Comma-separated list of filenames to be excluded during scanning.</td>
@@ -861,7 +989,7 @@
 </tr>
 <tr>
 <td>filedownloadr.ipinfodb_api_key</td>
-<td>API key of IPInfoDB.com</td>
+<td>API Key of IPInfoDB.com</td>
 <td>Get the API Key from <a href="https://ipinfodb.com/">https://ipinfodb.com/</a>.</td>
 <td>-</td>
 </tr>

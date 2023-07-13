@@ -348,14 +348,14 @@
   <h1>Plugins</h1>
 
 <p>FileDownload contains two deactivated plugins, that have to be renamed and
-activated afterward (otherwise they are deactivated after each update of
-FileDownloadR).</p>
+activated afterward (otherwise they are deactivated and reset to the original
+code after each update of FileDownloadR).</p>
 <ul>
 <li><strong>FileDownloadEmail</strong> sends an email each time when a file is downloaded.</li>
 <li><strong>FileDownloadFormSave</strong> saves a form submit (FormIt + FormSave) each time when a file is downloaded.</li>
 </ul>
-<p>The following plugin events are available after the installation of
-FileDownloadR:</p>
+<p>If you want to create your own plugins, the following plugin events are
+available after the installation of FileDownloadR:</p>
 <table>
 <thead>
 <tr>
@@ -383,6 +383,14 @@ FileDownloadR:</p>
 <tr>
 <td>OnFileDownloadAfterFileDownload</td>
 <td>hash, ctx, filePath, mediaSourceId, count</td>
+</tr>
+<tr>
+<td>OnFileDownloadBeforeFileUpload</td>
+<td>filePath, fileName</td>
+</tr>
+<tr>
+<td>OnFileDownloadAfterFileUpload</td>
+<td>filePath, fileName, hash, resourceId</td>
 </tr>
 </tbody>
 </table>
