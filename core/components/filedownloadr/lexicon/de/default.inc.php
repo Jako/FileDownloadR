@@ -36,3 +36,4 @@ $_lang['filedownloadr.upload_err_exists'] = 'Die hochgeladene Datei existiert be
 $_lang['filedownloadr.upload_err_filesize'] = 'Die Dateigröße hat die erlaubte Dateigröße überschritten.';
 $_lang['filedownloadr.upload_err_not_allowed'] = 'Der Upload ist nicht erlaubt.';
 $_lang['filedownloadr.upload_text'] = 'Wählen Sie eine Datei [[+extensions]] zum Hochladen aus.';
+$_lang['filedownloadr.upload_err_not_writable'] = 'Das Upload-Verzeichnis ist nicht beschreibbar.';
