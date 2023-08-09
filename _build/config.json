@@ -558,7 +558,6 @@
     "systemSettings": [
       {
         "key": "exclude_scan",
-        "type": "textfield",
         "area": "file",
         "value": ".,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store"
       },
@@ -570,13 +569,11 @@
       },
       {
         "key": "ipinfodb_api_key",
-        "type": "textfield",
         "area": "geolocation",
         "value": ""
       },
       {
         "key": "email_props",
-        "type": "textfield",
         "area": "email",
         "value": ""
       }
