@@ -407,21 +407,23 @@ class FileDownloadR
 
         $config = $this->replacePathProperties($config);
 
-        $config['getDir'] = !empty($config['getDir']) ? $this->checkPath($config['getDir']) : [''];
-        $config['getFile'] = !empty($config['getFile']) ? $this->checkPath($config['getFile']) : '';
+        $config['getDir'] = (!empty($config['getDir'])) ? $this->checkPath($config['getDir']) : [''];
+        $config['getFile'] = (!empty($config['getFile'])) ? $this->checkPath($config['getFile']) : '';
         $config['origDir'] = $config['getDir'];
 
-        if ($config['uploadFile']) {
+        if (!empty($config['uploadFile'])) {
             $mimes = new MimeTypes;
             $fileTypes = [];
             $fileExtensions = [];
-            foreach ($config['uploadFileTypes'] as $uploadFileType) {
-                if ($mimes->getExtension($uploadFileType)) {
-                    $fileTypes[] = $uploadFileType;
-                    $fileExtensions[] = $mimes->getExtension($uploadFileType);
-                } elseif ($mimes->getMimeType($uploadFileType)) {
-                    $fileTypes[] = $mimes->getMimeType(ltrim($uploadFileType, '.'));
-                    $fileExtensions[] = $uploadFileType;
+            if (!empty($config['uploadFileTypes'])) {
+                foreach ($config['uploadFileTypes'] as $uploadFileType) {
+                    if ($mimes->getExtension($uploadFileType)) {
+                        $fileTypes[] = $uploadFileType;
+                        $fileExtensions[] = $mimes->getExtension($uploadFileType);
+                    } elseif ($mimes->getMimeType($uploadFileType)) {
+                        $fileTypes[] = $mimes->getMimeType(ltrim($uploadFileType, '.'));
+                        $fileExtensions[] = $uploadFileType;
+                    }
                 }
             }
             $config['uploadFileTypes'] = $fileTypes;
