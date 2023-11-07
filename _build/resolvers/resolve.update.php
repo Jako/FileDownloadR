@@ -14,7 +14,7 @@ if ($object->xpdo) {
     {
         $c = $modx->newQuery('fdCount');
         $c->limit(1000, $offset);
-        $oldCounts = $modx->getCollection('fdCount', $c);
+        $oldCounts = $modx->getIterator('fdCount', $c);
         if ($oldCounts) {
             foreach ($oldCounts as $oldCount) {
                 $oldCountArray = $oldCount->toArray();
@@ -61,7 +61,7 @@ if ($object->xpdo) {
             'fdPaths.id < Paths.id',
         ]);
         $i = 0;
-        $duplicateCollection = $modx->getCollection('fdPaths', $c);
+        $duplicateCollection = $modx->getIterator('fdPaths', $c);
         foreach ($duplicateCollection as $duplicate) {
             $duplicate->remove();
             $i++;
@@ -69,15 +69,12 @@ if ($object->xpdo) {
         return $i;
     }
 
+    /** @var modX $modx */
     $modx =& $object->xpdo;
     removeDuplicates($modx);
 
-
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_UPGRADE:
-            /** @var modX $modx */
-            $modx =& $object->xpdo;
-
             // http://forums.modx.com/thread/88734/package-version-check#dis-post-489104
             $c = $modx->newQuery('transport.modTransportPackage');
             $c->where([
