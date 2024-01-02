@@ -1,4 +1,4 @@
-[![Default Lexicon](https://hosted.weblate.org/widgets/modx-extras/-/modx-filedownloadr-standard/svg-badge.svg)](https://hosted.weblate.org/projects/modx-extras/modx-filedownloadr-standard/)
+[![Default Lexicon](https://hosted.weblate.org/widgets/modx-extras/filedownloadr/standard/svg-badge.svg)](https://hosted.weblate.org/projects/modx-extras/filedownloadr/standard/)
 
 # FileDownloadR
 
@@ -31,4 +31,4 @@ The project is licensed under the [GPLv2 license](https://github.com/Jako/FileDo
 
 ## Translations
 
-Translations of the package can be made for the [Default Lexicon](https://hosted.weblate.org/projects/modx-extras/modx-filedownloadr-standard/), the [Properties Lexicon](https://hosted.weblate.org/projects/modx-extras/modx-filedownloadr-properties/) and the [System Settings](https://hosted.weblate.org/projects/modx-extras/modx-filedownloadr-system-settings/)
+Translations of the package can be made for the [Default Lexicon](https://hosted.weblate.org/projects/modx-extras/filedownloadr/standard/), the [Properties Lexicon](https://hosted.weblate.org/projects/modx-extras/filedownloadr/properties/) and the [System Settings](https://hosted.weblate.org/projects/modx-extras/filedownloadr/system-settings/)
