@@ -14,3 +14,12 @@ download link for each file is hashed. This way, the full url of the file will
 not be revealed and the files/directories can be located outside the webroot.
 Each file can also be assigned a download counter, which is stored in a custom
 database table. A single file can be uploaded using an upload form.
+
+### License
+
+The project is licensed under the [GPLv2 license](https://github.com/Jako/FileDownloadR/LICENSE.md).
+
+### Translations [![Default Lexicon](https://hosted.weblate.org/widget/modx-extras/filedownloadr/standard/svg-badge.svg)](https://hosted.weblate.org/projects/modx-extras/filedownloadr/)
+
+Translations of the package can be made for the [Default Lexicon](https://hosted.weblate.org/projects/modx-extras/filedownloadr/standard/), the [Properties Lexicon](https://hosted.weblate.org/projects/modx-extras/filedownloadr/properties/) and the [System Settings](https://hosted.weblate.org/projects/modx-extras/filedownloadr/system-settings/)
+
