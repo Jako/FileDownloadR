@@ -430,6 +430,9 @@ class FileDownloadR
             $config['uploadFileExtensions'] = $fileExtensions;
         }
 
+        $config['imgType'] = (!empty($config['imgType'])) ? $config['imgType'] : $this->getOption('imgType');
+        $this->imgTypes = $this->getImagetypes();
+
         $this->options = array_merge($this->options, $config);
     }
 
