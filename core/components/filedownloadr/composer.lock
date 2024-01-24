@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99913ac8cc62d0f23561d8c0e12104e3",
+    "content-hash": "b0a6f4c5affb378d5b2fdfc81c0d6649",
     "packages": [
         {
             "name": "ip2location/ipinfodb-php",
@@ -118,7 +118,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ext-json": "*"
     },
     "platform-dev": [],
     "platform-overrides": {
