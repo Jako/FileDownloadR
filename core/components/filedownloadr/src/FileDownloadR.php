@@ -829,20 +829,13 @@ class FileDownloadR
 
         $chunkContent = $this->modx->getChunk($this->getOption('chkDesc'));
 
-        $linesX = @explode('||', $chunkContent);
-        array_walk($linesX, function ($val) {
-            return trim($val);
-        });
+        $linesX = (!empty($chunkContent)) ? array_map('trim', explode('||', $chunkContent)) : [];
         foreach ($linesX as $k => $v) {
             if (empty($v)) {
                 unset($linesX[$k]);
                 continue;
             }
-            $descX = @explode('|', $v);
-            array_walk($descX, function ($val) {
-                return trim($val);
-            });
-
+            $descX = array_map('trim', explode('|', $v));
             $realPath = realpath($this->replacePathProperties($descX[0]));
 
             if (!$realPath) {
@@ -1314,10 +1307,7 @@ class FileDownloadR
         if (empty($this->getOption('extShown'))) {
             return true;
         }
-        $extShownX = @explode(',', $this->getOption('extShown'));
-        array_walk($extShownX, function ($val) {
-            return strtolower(trim($val));
-        });
+        $extShownX = (!empty($this->getOption('extShown'))) ? array_map('trim', explode(',', $this->getOption('extShown'))) : [];
         if (in_array($ext, $extShownX)) {
             return true;
         } else {
@@ -1336,10 +1326,7 @@ class FileDownloadR
         if (empty($this->getOption('extHidden'))) {
             return false;
         }
-        $extHiddenX = @explode(',', $this->getOption('extHidden'));
-        array_walk($extHiddenX, function ($val) {
-            return strtolower(trim($val));
-        });
+        $extHiddenX = (!empty($this->getOption('extHidden'))) ? array_map('trim', explode(',', $this->getOption('extHidden'))) : [];
         if (!in_array($ext, $extHiddenX)) {
             return true;
         } else {
