@@ -1310,7 +1310,10 @@ class FileDownloadR
         if (empty($this->getOption('extShown'))) {
             return true;
         }
-        $extShownX = (!empty($this->getOption('extShown'))) ? array_map('strtolower', explode(',', $this->getOption('extShown'))) : [];
+        $extShownX = explode(',', $this->getOption('extShown'));
+        array_walk($extShownX, function (&$val) {
+            $val = strtolower(trim($val));
+        });
         if (in_array($ext, $extShownX)) {
             return true;
         } else {
@@ -1329,7 +1332,10 @@ class FileDownloadR
         if (empty($this->getOption('extHidden'))) {
             return false;
         }
-        $extHiddenX = (!empty($this->getOption('extHidden'))) ? array_map('strtolower', explode(',', $this->getOption('extHidden'))) : [];
+        $extHiddenX = explode(',', $this->getOption('extHidden'));
+        array_walk($extHiddenX, function (&$val) {
+            $val = strtolower(trim($val));
+        });
         if (!in_array($ext, $extHiddenX)) {
             return true;
         } else {
