@@ -3,7 +3,7 @@
  * FileDownloadR
  *
  * Copyright 2011-2022 by Rico Goldsky <goldsky@virtudraft.com>
- * Copyright 2023 by Thomas Jakobi <office@treehillstudio.com>
+ * Copyright 2023-2024 by Thomas Jakobi <office@treehillstudio.com>
  *
  * @package filedownloadr
  * @subpackage classfile

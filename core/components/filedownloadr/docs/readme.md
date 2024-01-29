@@ -25,3 +25,10 @@ For more information please read the documentation on https://jako.github.io/Fil
 ## GitHub Repository
 
 https://github.com/Jako/FileDownloadR
+
+## Third party licenses
+
+This extra includes third party software, for which we are thankful.
+
+* ip2location/ipinfodb-php@1.0.0 [MIT]
+* ralouphie/mimey@2.1.0 [MIT]

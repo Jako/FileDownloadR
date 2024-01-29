@@ -5,11 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.3] - 2024-01-29
+
+### Fixed
+
+- Supplying file descriptions does not work [#5]
+- imgTypes property of the FileDownloadR snippet has no effect [#6]
+
 ## [3.1.2] - 2023-11-07
 
 ### Fixed
 
-- Fix updgrade issue to 3.x on sites with a large download count
+- Fix updgrade issue to 3.x on sites with a large download count [#4]
 
 ## [3.1.1] - 2023-09-21
 

@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Display a list of downloadable files without revealing the file url.",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "package": {
     "elements": {
       "snippets": [
