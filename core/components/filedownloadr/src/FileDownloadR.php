@@ -567,38 +567,40 @@ class FileDownloadR
     private function getDownloadCounts(array $array, string $fullPath)
     {
         $pathIds = $this->getPathIds($fullPath, $this->modx->context->key);
-        if ($this->getOption('countDownloads')) {
-            $c = $this->modx->newQuery('fdDownloads');
-            $c->where([
-                'fdDownloads.path_id:IN' => $pathIds
-            ]);
-            $c->groupby('fdDownloads.path_id');
-            $array['count'] = $this->modx->getCount('fdDownloads', $c);
-            $d = $this->modx->newQuery('fdPaths');
-            $d->leftJoin('fdDownloads', 'Downloads');
-            $d->where([
-                'fdPaths.id:IN' => $pathIds,
-                'Downloads.id:IS' => null
-            ]);
-            $d->groupby('fdPaths.id');
-            $array['count_not'] = $this->modx->getCount('fdPaths', $d);
-        }
-        if ($this->getOption('countUserDownloads') && $this->modx->user) {
-            $c = $this->modx->newQuery('fdDownloads');
-            $c->where([
-                'fdDownloads.path_id:IN' => $pathIds,
-                'fdDownloads.user' => $this->modx->user->get('id')
-            ]);
-            $c->groupby('fdDownloads.path_id');
-            $array['count_user'] = $this->modx->getCount('fdDownloads', $c);
-            $d = $this->modx->newQuery('fdPaths');
-            $d->leftJoin('fdDownloads', 'Downloads');
-            $d->where([
-                'fdPaths.id:IN' => $pathIds,
-            ]);
-            $d->having('SUM(CASE WHEN Downloads.user = ' . $this->modx->user->get('id') . ' THEN 1 ELSE 0 END) = 0');
-            $d->groupby('fdPaths.id');
-            $array['count_user_not'] = $this->modx->getCount('fdPaths', $d);
+        if (!empty($pathIds)) {
+            if ($this->getOption('countDownloads')) {
+                $c = $this->modx->newQuery('fdDownloads');
+                $c->where([
+                    'fdDownloads.path_id:IN' => $pathIds
+                ]);
+                $c->groupby('fdDownloads.path_id');
+                $array['count'] = $this->modx->getCount('fdDownloads', $c);
+                $d = $this->modx->newQuery('fdPaths');
+                $d->leftJoin('fdDownloads', 'Downloads');
+                $d->where([
+                    'fdPaths.id:IN' => $pathIds,
+                    'Downloads.id:IS' => null
+                ]);
+                $d->groupby('fdPaths.id');
+                $array['count_not'] = $this->modx->getCount('fdPaths', $d);
+            }
+            if ($this->getOption('countUserDownloads') && $this->modx->user) {
+                $c = $this->modx->newQuery('fdDownloads');
+                $c->where([
+                    'fdDownloads.path_id:IN' => $pathIds,
+                    'fdDownloads.user' => $this->modx->user->get('id')
+                ]);
+                $c->groupby('fdDownloads.path_id');
+                $array['count_user'] = $this->modx->getCount('fdDownloads', $c);
+                $d = $this->modx->newQuery('fdPaths');
+                $d->leftJoin('fdDownloads', 'Downloads');
+                $d->where([
+                    'fdPaths.id:IN' => $pathIds,
+                ]);
+                $d->having('SUM(CASE WHEN Downloads.user = ' . $this->modx->user->get('id') . ' THEN 1 ELSE 0 END) = 0');
+                $d->groupby('fdPaths.id');
+                $array['count_user_not'] = $this->modx->getCount('fdPaths', $d);
+            }
         }
         return $array;
     }
@@ -714,7 +716,9 @@ class FileDownloadR
             if (empty($this->mediaSource)) {
                 $rootRealPath = realpath($rootPath);
                 if (!is_dir($rootPath) || empty($rootRealPath)) {
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, '&getDir parameter expects a correct dir path. <b>"' . $rootPath . '"</b> is given.', '', 'FileDownloadR', __FILE__, __LINE__);
+                    if ($rootPath) {
+                        $this->modx->log(xPDO::LOG_LEVEL_ERROR, '&getDir parameter expects a correct dir path. <b>"' . $rootPath . '"</b> is given.', '', 'FileDownloadR', __FILE__, __LINE__);
+                    }
                     return [];
                 }
             }

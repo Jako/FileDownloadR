@@ -95,7 +95,7 @@ class FileDownloadLinkSnippet extends Snippet
             return '';
         }
 
-        $phs = $this->filedownloadr->config;
+        $phs = $this->filedownloadr->options;
         $fileInfos = $contents['file'][0];
         foreach ($fileInfos as $k => $v) {
             $phs[$this->getProperty('prefix') . $k] = $v;
