@@ -15,3 +15,5 @@ $_lang['setting_filedownloadr.ipinfodb_api_key'] = 'API-Schlüssel von IPInfoDB.
 $_lang['setting_filedownloadr.ipinfodb_api_key_desc'] = 'Holen Sie sich den API-Schlüssel von <a href="https://ipinfodb.com/" target="_blank">https://ipinfodb.com/</a>.';
 $_lang['setting_filedownloadr.use_geolocation'] = 'Geolokalisierung nach IP verwenden';
 $_lang['setting_filedownloadr.use_geolocation_desc'] = 'Verwenden Sie die Geolokalisierung von IPInfoDB.com.';
+$_lang['setting_filedownloadr.extended_file_fields'] = 'Erweiterte Dateifelder';
+$_lang['setting_filedownloadr.extended_file_fields_desc'] = 'JSON-kodiertes Array von erweiterten Dateifeldern. Das Array kann die Schlüssel ‚name‘ und ‚type‘ verwenden.';
