@@ -7,12 +7,17 @@ $xpdo_meta_map['fdPaths']= array (
   'version' => '1.1',
   'table' => 'fd_paths',
   'extends' => 'xPDOSimpleObject',
+  'tableMeta' => 
+  array (
+    'engine' => 'InnoDB',
+  ),
   'fields' => 
   array (
     'ctx' => 'web',
     'media_source_id' => 0,
-    'filename' => '',
-    'hash' => '',
+    'filename' => NULL,
+    'extended' => NULL,
+    'hash' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -39,7 +44,12 @@ $xpdo_meta_map['fdPaths']= array (
       'precision' => '255',
       'phptype' => 'string',
       'null' => true,
-      'default' => '',
+    ),
+    'extended' => 
+    array (
+      'dbtype' => 'mediumtext',
+      'phptype' => 'json',
+      'null' => true,
     ),
     'hash' => 
     array (
@@ -47,7 +57,6 @@ $xpdo_meta_map['fdPaths']= array (
       'precision' => '255',
       'phptype' => 'string',
       'null' => true,
-      'default' => '',
     ),
   ),
   'composites' => 

@@ -11,16 +11,17 @@
   padding: 10px;
   margin-bottom: 10px;
 }
-.fd-upload-form .fd-file-label {
+.fd-upload-form .fd-label, .fd-upload-form .fd-file-label {
   display: block;
   margin-bottom: 10px;
 }
-.fd-upload-form .fd-file-container {
+.fd-upload-form .fd-file-container, .fd-upload-form .fd-extended-container {
+  margin-bottom: 10px;
+}
+.fd-upload-form input[type=file], .fd-upload-form input[type=text] {
+  display: block;
+  width: 100%;
   border: 1px solid #ccc;
-  margin-bottom: 10px;
-}
-.fd-upload-form input[type=file] {
-  display: block;
 }
 .fd-upload-form input[type=file]::file-selector-button {
   background-color: #fff;
@@ -28,13 +29,18 @@
   border: 0;
   border-right: 1px solid #ccc;
   padding: 5px 10px;
-  margin-right: 20px;
+  margin-right: 10px;
   transition: 0.5s;
 }
 .fd-upload-form input[type=file]::file-selector-button:hover {
-  background-color: #eee;
-  border: 0;
-  border-right: 1px solid #ccc;
+  background-color: rgb(216.75, 216.75, 216.75);
+}
+.fd-upload-form input[type=text] {
+  padding: 5px 10px;
+}
+.fd-upload-form input[type=text]:focus-visible {
+  outline: none;
+  border: 1px solid #000;
 }
 .fd-upload-form .fd-file-button {
   display: block;
@@ -45,7 +51,7 @@
   transition: 0.5s;
 }
 .fd-upload-form .fd-file-button:hover {
-  background-color: #871a1a;
+  background-color: rgb(113.7688679245, 21.7311320755, 21.7311320755);
 }
 
 table.fd-table {
@@ -76,4 +82,8 @@ table.fd-table.no-border, table.fd-table.no-border > tr, table.fd-table.no-borde
 table.fd-table .fd-icon {
   display: inline-block;
   width: 16px;
+}
+table.fd-table .fd-extended {
+  display: block;
+  margin-left: 20px;
 }

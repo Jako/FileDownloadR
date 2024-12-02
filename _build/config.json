@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Display a list of downloadable files without revealing the file url.",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.1.4",
+  "version": "3.2.0-rc1",
   "package": {
     "elements": {
       "snippets": [
@@ -112,6 +112,14 @@
               "value": "0"
             },
             {
+              "name": "dirSeparator",
+              "value": ""
+            },
+            {
+              "name": "dirsSeparator",
+              "value": ""
+            },
+            {
               "name": "downloadByOther",
               "type": "combo-boolean",
               "value": "0"
@@ -130,6 +138,14 @@
             },
             {
               "name": "fileJs",
+              "value": ""
+            },
+            {
+              "name": "fileSeparator",
+              "value": ""
+            },
+            {
+              "name": "filesSeparator",
               "value": ""
             },
             {
@@ -154,12 +170,20 @@
               "value": "fdImages"
             },
             {
+              "name": "limit",
+              "value": "0"
+            },
+            {
               "name": "mediaSourceId",
               "value": "0"
             },
             {
               "name": "noDownload",
               "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "offset",
               "value": "0"
             },
             {
@@ -251,6 +275,10 @@
               "name": "toArray",
               "type": "combo-boolean",
               "value": "0"
+            },
+            {
+              "name": "totalVar",
+              "value": "fd.total"
             },
             {
               "name": "tplBreadcrumb",
@@ -575,6 +603,11 @@
       {
         "key": "email_props",
         "area": "email",
+        "value": ""
+      },
+      {
+        "key": "extended_file_fields",
+        "area": "system",
         "value": ""
       }
     ]

@@ -17,3 +17,5 @@ available after the installation of FileDownloadR:
 | OnFileDownloadAfterFileDownload  | hash, ctx, filePath, mediaSourceId, count |
 | OnFileDownloadBeforeFileUpload   | filePath, fileName                        |
 | OnFileDownloadAfterFileUpload    | filePath, fileName, hash, resourceId      |
+| OnFileDownloadBeforeFileDelete   | hash, ctx, filePath, mediaSourceId, count |
+| OnFileDownloadAfterFileDelete    | hash, ctx, filePath, mediaSourceId, count |

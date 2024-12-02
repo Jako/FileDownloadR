@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.1.4';
+    public $version = '3.2.0-rc1';
 
     /**
      * The class options
@@ -130,9 +130,9 @@ class FileDownloadR
         ], $options);
 
         $this->_output = [
-            'rows' => '',
-            'dirRows' => '',
-            'fileRows' => ''
+            'rows' => [],
+            'dirRows' => [],
+            'fileRows' => []
         ];
 
         $lexicon = $this->modx->getService('lexicon', modLexicon::class);
@@ -150,7 +150,8 @@ class FileDownloadR
             'imgTypes' => 'fdimages',
             'encoding' => 'utf-8',
             'exclude_scan' => $this->getExplodedOption('exclude_scan', [], '.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store'),
-            'email_props' => $this->getJsonOption('email_props', [], '')
+            'email_props' => $this->getJsonOption('email_props', [], ''),
+            'extended_file_fields' => json_decode($this->getBoundOption('extended_file_fields', [], ''), true),
         ]);
 
         $this->parse = new Parse($modx);
@@ -175,6 +176,7 @@ class FileDownloadR
         $this->options['getDir'] = !empty($this->getOption('getDir')) ? $this->checkPath($this->getOption('getDir')) : '';
         $this->options['getFile'] = !empty($this->getOption('getFile')) ? $this->checkPath($this->getOption('getFile')) : '';
         $this->options['origDir'] = $this->options['getDir'];
+        $this->options['extendedFields'] = !empty($this->options['extended_file_fields']);
         $this->options = $this->replacePathProperties($this->options);
     }
 
@@ -245,6 +247,33 @@ class FileDownloadR
     }
 
     /**
+     * Get Bound Option
+     *
+     * @param string $key
+     * @param array $options
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getBoundOption($key, $options = [], $default = null)
+    {
+        $value = trim($this->getOption($key, $options, $default));
+        if (strpos($value, '@FILE') === 0) {
+            $path = trim(substr($value, strlen('@FILE')));
+            // Sanitize to avoid ../ style path traversal
+            $path = preg_replace(["/\.*[\/|\\\]/i", "/[\/|\\\]+/i"], ['/', '/'], $path);
+            // Include only files inside the MODX base path
+            if (strpos($path, MODX_BASE_PATH) === 0 && file_exists($path)) {
+                $value = file_get_contents($path);
+            }
+        } elseif (strpos($value, '@CHUNK') === 0) {
+            $name = trim(substr($value, strlen('@CHUNK')));
+            $chunk = $this->modx->getObject('modChunk', ['name' => $name]);
+            $value = ($chunk) ? $chunk->get('snippet') : '';
+        }
+        return $value;
+    }
+
+    /**
      * Retrieve the images for the specified file extensions.
      *
      * @return array file type's images
@@ -282,8 +311,8 @@ class FileDownloadR
         ];
         $cleanPaths = [];
         if (!empty($paths)) {
-            $xPath = @explode(',', $paths);
-            foreach ($xPath as $path) {
+            $paths = explode(',', $paths);
+            foreach ($paths as $path) {
                 if (empty($path)) {
                     continue;
                 }
@@ -327,11 +356,9 @@ class FileDownloadR
             '[[++base_path]]' => $this->modx->getOption('base_path')
         ];
         if (is_array($subject)) {
-            $result = [];
-            foreach ($subject as $k => $v) {
-                $result[$k] = $this->replacePathProperties($v);
-            }
-            return $result;
+            return array_map(function ($v) {
+                return $this->replacePathProperties($v);
+            }, $subject);
         } else {
             return str_replace(array_keys($replacements), array_values($replacements), $subject);
         }
@@ -399,9 +426,9 @@ class FileDownloadR
 
         // Clear previous output for subsequent snippet calls
         $this->_output = [
-            'rows' => '',
-            'dirRows' => '',
-            'fileRows' => ''
+            'rows' => [],
+            'dirRows' => [],
+            'fileRows' => []
         ];
         $this->_error = [];
 
@@ -435,7 +462,6 @@ class FileDownloadR
 
         $this->imgTypes = $this->getImagetypes();
     }
-
 
     /**
      * Get the download counts of a path
@@ -512,36 +538,46 @@ class FileDownloadR
             }
         }
 
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        /** @var fdPaths $fdPath */
+        $fdPath = $this->modx->getObject('fdPaths', [
             'ctx' => $file['ctx'],
             'media_source_id' => $this->getOption('mediaSourceId'),
             'filename' => $file['filename']
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             if (!$autoCreate) {
                 return false;
             }
-            $fdlPath = $this->modx->newObject('fdPaths');
-            $fdlPath->fromArray([
+            $fdPath = $this->modx->newObject('fdPaths');
+            $fdPath->fromArray([
                 'ctx' => $file['ctx'],
                 'media_source_id' => $this->getOption('mediaSourceId'),
                 'filename' => $file['filename'],
                 'count' => 0,
                 'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
             ]);
-            if ($fdlPath->save() === false) {
+            foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
+                $name = $extendedFileField['name'];
+                if ($name) {
+                    if (isset($file['extended'][$name])) {
+                        $fdPath->setExtendedField($name, $file['extended'][$name]);
+                    }
+                }
+            }
+            if ($fdPath->save() === false) {
                 $msg = $this->modx->lexicon('filedownloadr.counter_err_save');
                 $this->setError($msg);
                 $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                 return false;
             }
         }
-        $checked = $fdlPath->toArray();
-        $checked['count'] = $this->modx->getCount('fdDownloads', [
-            'path_id' => $fdlPath->getPrimaryKey()
+        $filePathArray = $fdPath->toArray();
+
+        $filePathArray['count'] = $this->modx->getCount('fdDownloads', [
+            'path_id' => $fdPath->getPrimaryKey()
         ]);
 
-        return $checked;
+        return $filePathArray;
     }
 
     /**
@@ -895,7 +931,7 @@ class FileDownloadR
             $sort = [];
             foreach ($sortPath as $k => $path) {
                 // path name for the &groupByDirectory template: tpl-group
-                $this->_output['rows'] .= $this->tplDirectory($k);
+                $this->_output['rows'][] = $this->tplDirectory($k);
 
                 $sort['path'][$k] = $this->groupByType($path);
             }
@@ -932,6 +968,7 @@ class FileDownloadR
             $fileType = @filetype($fullPath);
 
             if ($fileType == 'file') {
+                // a file
                 $fileInfo = $this->fileInformation($fullPath);
                 if (!$fileInfo) {
                     continue;
@@ -1148,7 +1185,8 @@ class FileDownloadR
             'link' => $link['url'], // fallback
             'url' => $link['url'],
             'deleteurl' => $linkdelete['url'],
-            'hash' => $filePathArray['hash']
+            'hash' => $filePathArray['hash'],
+            'extended' => $filePathArray['extended']
         ];
         return $this->getFileCount($info, $filePathArray['id']);
     }
@@ -1185,14 +1223,14 @@ class FileDownloadR
         }
 
         $sort = [];
-        $dirs = '';
+        $dirs = [];
         if (!empty($this->getOption('browseDirectories')) && !empty($sortType['dir'])) {
             $sort['dir'] = $sortType['dir'];
             // template
             $row = 1;
             foreach ($sort['dir'] as $v) {
                 $v['class'] = $this->cssDir($row);
-                $dirs .= $this->tplDir($v);
+                $dirs[] = $this->tplDir($v);
                 $row++;
             }
         }
@@ -1201,35 +1239,39 @@ class FileDownloadR
             $this->getOption('prefix') . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
             $this->getOption('prefix') . 'path' => $this->breadcrumbs(),
         ]);
-        $this->_output['dirRows'] = '';
+        $this->_output['dirRows'] = [];
         if (!empty($this->getOption('tplWrapperDir')) && !empty($dirs)) {
-            $phs[$this->getOption('prefix') . 'dirRows'] = $dirs;
-            $this->_output['dirRows'] .= $this->parse->getChunk($this->getOption('tplWrapperDir'), $phs);
+            $phs[$this->getOption('prefix') . 'dirRows'] = implode($this->getOption('dirSeparator'), $dirs);
+            $this->_output['dirRows'][] = $this->parse->getChunk($this->getOption('tplWrapperDir'), $phs);
         } else {
-            $this->_output['dirRows'] .= $dirs;
+            $this->_output['dirRows'][] = implode($this->getOption('dirSeparator'), $dirs);
         }
 
-        $files = '';
+        $files = [];
         if (!empty($sortType['file'])) {
             $sort['file'] = $sortType['file'];
             // template
             $row = 1;
             foreach ($sort['file'] as $v) {
                 $v['class'] = $this->cssFile($row, $v['ext']);
-                $files .= $this->tplFile($v);
+                $files[] = $this->tplFile($v);
                 $row++;
             }
+            if (count($this->getOption('getDir')) == 1) {
+                $this->modx->setPlaceholder($this->getOption('totalVar'), count($files));
+                $files = array_slice($files, $this->getOption('offset'), $this->getOption('limit'));
+            }
         }
-        $this->_output['fileRows'] = '';
+        $this->_output['fileRows'] = [];
         if (!empty($this->getOption('tplWrapperFile')) && !empty($files)) {
-            $phs[$this->getOption('prefix') . 'fileRows'] = $files;
-            $this->_output['fileRows'] .= $this->parse->getChunk($this->getOption('tplWrapperFile'), $phs);
+            $phs[$this->getOption('prefix') . 'fileRows'] = implode($this->getOption('fileSeparator'), $files);
+            $this->_output['fileRows'][] = $this->parse->getChunk($this->getOption('tplWrapperFile'), $phs);
         } else {
-            $this->_output['fileRows'] .= $files;
+            $this->_output['fileRows'][] = implode($this->getOption('fileSeparator'), $files);
         }
 
-        $this->_output['rows'] .= $this->_output['dirRows'];
-        $this->_output['rows'] .= $this->_output['fileRows'];
+        $this->_output['rows'][] = implode($this->getOption('dirsSeparator'), $this->_output['dirRows']);
+        $this->_output['rows'][] = implode($this->getOption('filesSeparator'), $this->_output['fileRows']);
 
         return $sort;
     }
@@ -1704,8 +1746,13 @@ class FileDownloadR
             return '';
         }
         $phs = $this->options;
-        foreach ($fileInfo as $k => $v) {
-            $phs[$this->getOption('prefix') . $k] = $v;
+        foreach ($fileInfo as $key => $value) {
+            if ($key === 'extended' && is_array($value)) {
+                foreach ($value as $k => $v) {
+                    $value[$k] = htmlspecialchars($v);
+                }
+            }
+            $phs[$this->getOption('prefix') . $key] = $value;
         }
         return $this->parse->getChunk($this->getOption('tplFile'), $phs);
     }
@@ -1932,7 +1979,7 @@ class FileDownloadR
             ob_flush();
             flush();
 
-            $chunksize = 1 * (1024 * 1024); // how many bytes per chunk
+            $chunksize = 1024 * 1024; // how many bytes per chunk
             $handle = @fopen($realFilePath, 'rb');
             if ($handle === false) {
                 return false;
@@ -2062,7 +2109,7 @@ class FileDownloadR
     /**
      * Upload action.
      *
-     * @return false file is pulled to the browser
+     * @return bool State of the upload
      */
     public function uploadFile()
     {
@@ -2091,9 +2138,11 @@ class FileDownloadR
                 return false;
             }
 
+            $extendedFields = $this->getPostExtendedFields();
             $eventProperties = [
                 'filePath' => $filePath,
-                'fileName' => $fileName
+                'fileName' => $fileName,
+                'extended' => $extendedFields
             ];
             $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileUpload', $eventProperties);
             if (is_array($result)) {
@@ -2101,6 +2150,9 @@ class FileDownloadR
                     return false;
                 }
             }
+            $filePath = $result['filePath'] ?? $filePath;
+            $fileName = $result['fileName'] ?? $fileName;
+            $extendedFields = $result['extended'] ?? $extendedFields;
 
             if (empty($this->mediaSource)) {
                 if (file_exists($filePath . $this->getOption('directorySeparator') . $fileName)) {
@@ -2139,10 +2191,18 @@ class FileDownloadR
                 return false;
             }
 
+            // Create the uploaded file database entry
+            $fileArray = $this->getFilePathArray([
+                'ctx' => $this->modx->context->key,
+                'filename' => $filePath . $this->getOption('directorySeparator') . $fileName,
+                'extended' => $extendedFields,
+            ]);
+
             $eventProperties = [
                 'filePath' => $filePath,
                 'fileName' => $fileName,
-                'hash' => $filePathArray['hash'],
+                'extended' => $extendedFields,
+                'hash' => $fileArray['hash'],
                 'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
             $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
@@ -2152,7 +2212,7 @@ class FileDownloadR
                 }
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -2175,8 +2235,28 @@ class FileDownloadR
             if (empty($this->mediaSource)) {
                 if (file_exists($filePath)) {
                     try {
-                        unlink($filePath);
-                        $fdlPath->remove();
+                        $eventProperties = [
+                            'hash' => $fdlPath->get('hash'),
+                            'ctx' => $fdlPath->get('ctx'),
+                            'mediaSourceId' => $fdlPath->get('media_source_id'),
+                            'filePath' => $filePath,
+                            'xtended' => json_decode($fdlPath->get('xtended'), true) ?? [],
+                        ];
+                        $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
+                        $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                        if (is_array($result)) {
+                            if (in_array(false, $result, true)) {
+                                return false;
+                            }
+                        }
+                        $success = unlink($filePath);
+                        $eventProperties['success'] = $success && $fdlPath->remove();
+                        $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
+                        if (is_array($result)) {
+                            if (in_array(false, $result, true)) {
+                                return false;
+                            }
+                        }
                     } catch (Exception $e) {
                         $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
                             'file' => pathinfo($filePath, PATHINFO_BASENAME)
@@ -2215,29 +2295,37 @@ class FileDownloadR
     /**
      * List the contents
      *
+     * @param bool $upload
      * @return string
      */
-    public function listContents()
+    public function listContents($upload = false)
     {
         $breadcrumbs = $this->breadcrumbs();
         if (!empty($this->getOption('tplWrapper'))) {
+            $prefix = $this->getOption('prefix');
             $args = $this->modx->request->getParameters(['fdldir']);
             if ($this->getOption('fdlid')) {
                 $args['fdlid'] = $this->getOption('fdlid');
             }
-            $output = $this->parse->getChunk($this->getOption('tplWrapper'), array_merge($this->options, [
-                $this->getOption('prefix') . 'error' => $this->getError(),
-                $this->getOption('prefix') . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
-                $this->getOption('prefix') . 'path' => $breadcrumbs,
-                $this->getOption('prefix') . 'uploadUrl' => $this->modx->makeUrl($this->modx->resource->get('id'), $this->modx->context->key, $args),
-                $this->getOption('prefix') . 'uploadFileExtensions' => $this->getOption('uploadFileExtensions') ? '(*.' . implode(', *.', $this->getOption('uploadFileExtensions')) . ')' : '',
-                $this->getOption('prefix') . 'uploadFileTypes' => implode(',', $this->getOption('uploadFileTypes')),
-                $this->getOption('prefix') . 'rows' => !empty($this->_output['rows']) ? $this->_output['rows'] : '',
-                $this->getOption('prefix') . 'dirRows' => $this->_output['dirRows'],
-                $this->getOption('prefix') . 'fileRows' => $this->_output['fileRows'],
-            ]));
+            $options = array_merge($this->options, [
+                $prefix . 'error' => $this->getError(),
+                $prefix . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
+                $prefix . 'path' => $breadcrumbs,
+                $prefix . 'uploadUrl' => $this->modx->makeUrl($this->modx->resource->get('id'), $this->modx->context->key, $args),
+                $prefix . 'uploadFileExtensions' => $this->getOption('uploadFileExtensions') ? '(*.' . implode(', *.', $this->getOption('uploadFileExtensions')) . ')' : '',
+                $prefix . 'uploadFileTypes' => implode(',', $this->getOption('uploadFileTypes')),
+                $prefix . 'rows' => !empty($this->_output['rows']) ? implode('', $this->_output['rows']) : '',
+                $prefix . 'dirRows' => $this->_output['dirRows'],
+                $prefix . 'fileRows' => $this->_output['fileRows'],
+                $prefix . 'extendedFields' => $this->getOption('extendedFields') ? '1' : '',
+            ]);
+            if (!empty($_POST) && !$upload) {
+                $options = array_merge($options, $this->getPostExtendedFields('fdextended_'));
+            }
+
+            $output = $this->parse->getChunk($this->getOption('tplWrapper'), $options);
         } else {
-            $output = !empty($this->_output['rows']) ? $this->_output['rows'] : '';
+            $output = !empty($this->_output['rows']) ? implode('', $this->_output['rows']) : '';
         }
 
         return $output;
@@ -2271,5 +2359,38 @@ class FileDownloadR
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param string $prefix
+     * @return array
+     */
+    private function getPostExtendedFields($prefix = '')
+    {
+        $result = [];
+        foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
+            $name = $extendedFileField['name'] ?? '';
+            if ($name) {
+                $parameter = $this->modx->request->getParameters('fdextended_' . $name, 'POST');
+                if (!empty($parameter)) {
+                    switch ($extendedFileField['type'] ?? 'string') {
+                        case 'bool':
+                        case 'boolean':
+                            $parameter = (bool)$parameter;
+                            break;
+                        case 'int':
+                        case 'integer':
+                            $parameter = (int)$parameter;
+                            break;
+                        case 'string':
+                        default:
+                            $parameter = htmlspecialchars($this->modx->stripTags($parameter));
+
+                    }
+                    $result[$prefix . $name] = $parameter;
+                }
+            }
+        }
+        return $result;
     }
 }

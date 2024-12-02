@@ -44,20 +44,26 @@ class FileDownloadSnippet extends Snippet
             'dateFormat' => 'Y-m-d',
             'deleteGroups' => '',
             'directLink::bool' => false,
+            'dirSeparator' => "\n",
+            'dirsSeparator' => "\n",
             'downloadByOther::bool' => false,
             'extHidden' => '',
             'extShown' => '',
             'fdlid' => '',
             'fileCss' => '{fd_assets_url}css/fd.min.css',
             'fileJs' => '',
+            'fileSeparator' => "\n",
+            'filesSeparator' => "\n",
             'geoApiKey' => $this->filedownloadr->getOption('ipinfodb_api_key'),
             'getDir' => '',
             'getFile' => '',
             'groupByDirectory::bool' => false,
             'imgLocat' => '{fd_assets_url}img/filetypes/',
             'imgTypes' => 'fdImages',
+            'limit::int' => '0',
             'mediaSourceId::int' => 0,
             'noDownload::bool' => false,
+            'offset::int' => '0',
             'prefix' => 'fd.',
             'saltText' => 'FileDownloadR',
             'showEmptyDirectory::bool' => false,
@@ -66,6 +72,7 @@ class FileDownloadSnippet extends Snippet
             'sortOrder' => 'asc',
             'sortOrderNatural::bool' => true,
             'toArray::bool' => false,
+            'totalVar' => 'fd.total',
             'tplBreadcrumb' => 'fdBreadcrumbTpl',
             'tplDir' => 'fdRowDirTpl',
             'tplFile' => 'fdRowFileTpl',
@@ -110,6 +117,7 @@ class FileDownloadSnippet extends Snippet
             $this->filedownloadr->checkReferrer();
         }
 
+        $upload = false;
         if (!$this->getProperty('downloadByOther')) {
             $sanitizedGets = $this->modx->sanitize($_GET);
             $checked = $this->checkFileDownloadId($sanitizedGets['fdlid'] ?? '');
@@ -145,7 +153,7 @@ class FileDownloadSnippet extends Snippet
             }
 
             if ($this->getProperty('uploadFile') && !empty($_POST) && $checked) {
-                $this->filedownloadr->uploadFile();
+                $upload = $this->filedownloadr->uploadFile();
             }
         }
 
@@ -157,7 +165,7 @@ class FileDownloadSnippet extends Snippet
         if ($this->getProperty('toArray')) {
             $output = '<pre>' . print_r($contents, true) . '</pre>';
         } else {
-            $output = $this->filedownloadr->listContents();
+            $output = $this->filedownloadr->listContents($upload);
         }
 
         if (!empty($toPlaceholder)) {
@@ -175,13 +183,13 @@ class FileDownloadSnippet extends Snippet
      */
     private function checkFileDownloadId(string $fileDownloadId)
     {
-        $selected = true;
+        $checked = true;
         if (!empty($fileDownloadId) &&
             !empty($this->getProperty('fdlid')) &&
             ($fileDownloadId != $this->getProperty('fdlid'))
         ) {
-            $selected = false;
+            $checked = false;
         }
-        return $selected;
+        return $checked;
     }
 }

@@ -33,6 +33,7 @@
         <field key="ctx" dbtype="varchar" precision="255" phptype="string" null="true" default="web"/>
         <field key="media_source_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false" default="0"/>
         <field key="filename" dbtype="varchar" precision="255" phptype="string" null="true"/>
+        <field key="extended" dbtype="mediumtext" phptype="json" null="true"/>
         <field key="hash" dbtype="varchar" precision="255" phptype="string" null="true"/>
 
         <composite alias="Downloads" class="fdDownloads" local="id" foreign="path_id" cardinality="many" owner="local"/>

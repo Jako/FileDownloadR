@@ -7,11 +7,15 @@ $xpdo_meta_map['fdDownloads']= array (
   'version' => '1.1',
   'table' => 'fd_downloads',
   'extends' => 'xPDOSimpleObject',
+  'tableMeta' => 
+  array (
+    'engine' => 'InnoDB',
+  ),
   'fields' => 
   array (
     'path_id' => NULL,
     'ip' => '0.0.0.0',
-    'referer' => '',
+    'referer' => NULL,
     'country' => '',
     'region' => '',
     'city' => '',
@@ -29,23 +33,20 @@ $xpdo_meta_map['fdDownloads']= array (
       'attributes' => 'unsigned',
       'phptype' => 'integer',
       'null' => false,
-      'index' => 'index',
     ),
     'ip' => 
     array (
       'dbtype' => 'varchar',
-      'precision' => '25',
+      'precision' => '46',
       'phptype' => 'string',
       'null' => false,
       'default' => '0.0.0.0',
     ),
     'referer' => 
     array (
-      'dbtype' => 'varchar',
-      'precision' => '255',
+      'dbtype' => 'text',
       'phptype' => 'string',
       'null' => true,
-      'default' => '',
     ),
     'country' => 
     array (
@@ -92,7 +93,6 @@ $xpdo_meta_map['fdDownloads']= array (
       'phptype' => 'integer',
       'null' => false,
       'default' => 0,
-      'index' => 'index',
     ),
     'timestamp' => 
     array (
@@ -104,9 +104,9 @@ $xpdo_meta_map['fdDownloads']= array (
   ),
   'indexes' => 
   array (
-    'path' => 
+    'path_id' => 
     array (
-      'alias' => 'path',
+      'alias' => 'path_id',
       'primary' => false,
       'unique' => false,
       'type' => 'BTREE',

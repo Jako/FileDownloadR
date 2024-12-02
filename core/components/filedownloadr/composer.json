@@ -21,6 +21,7 @@
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
+    "ext-fileinfo": "*",
     "ip2location/ipinfodb-php": "^1.0",
     "ralouphie/mimey": "^2.1"
   },
