@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.0-rc1';
+    public $version = '3.2.0-rc2';
 
     /**
      * The class options
@@ -151,7 +151,7 @@ class FileDownloadR
             'encoding' => 'utf-8',
             'exclude_scan' => $this->getExplodedOption('exclude_scan', [], '.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store'),
             'email_props' => $this->getJsonOption('email_props', [], ''),
-            'extended_file_fields' => json_decode($this->getBoundOption('extended_file_fields', [], ''), true),
+            'extended_file_fields' => json_decode($this->getBoundOption('extended_file_fields', [], '[]'), true) ?? [],
         ]);
 
         $this->parse = new Parse($modx);
@@ -1653,12 +1653,12 @@ class FileDownloadR
             if (empty($absPath)) {
                 return false;
             }
-            $fdlPath = $this->modx->getObject('fdPaths', [
+            $fdPath = $this->modx->getObject('fdPaths', [
                 'ctx' => $this->modx->context->key,
                 'media_source_id' => $this->getOption('mediaSourceId'),
                 'filename' => $absPath,
             ]);
-            if (!$fdlPath) {
+            if (!$fdPath) {
                 $filePathArray = $this->getFilePathArray([
                     'ctx' => $this->modx->context->key,
                     'filename' => $absPath,
@@ -1666,13 +1666,13 @@ class FileDownloadR
                 if (!$filePathArray) {
                     continue;
                 }
-                $fdlPath = $this->modx->getObject('fdPaths', [
+                $fdPath = $this->modx->getObject('fdPaths', [
                     'ctx' => $this->modx->context->key,
                     'media_source_id' => $this->getOption('mediaSourceId'),
                     'filename' => $filePathArray['filename']
                 ]);
             }
-            $hash = $fdlPath->get('hash');
+            $hash = $fdPath->get('hash');
             $link = $this->createLink($hash, $this->modx->context->key);
 
             if ($trailingPath !== $origPath . $this->getOption('directorySeparator')) {
@@ -1846,13 +1846,13 @@ class FileDownloadR
      */
     public function setDirectory($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('ctx') !== $this->modx->context->key
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('ctx') !== $this->modx->context->key
         ) {
             return false;
         }
-        $this->options['getDir'] = [rtrim($fdlPath->get('filename'), $this->getOption('directorySeparator'))];
+        $this->options['getDir'] = [rtrim($fdPath->get('filename'), $this->getOption('directorySeparator'))];
         $this->options['getFile'] = [];
 
         return true;
@@ -1869,18 +1869,18 @@ class FileDownloadR
         if (empty($hash)) {
             return false;
         }
-        /** @var fdPaths $fdlPath */
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        /** @var fdPaths $fdPath */
+        $fdPath = $this->modx->getObject('fdPaths', [
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             return false;
         }
-        if ($this->modx->context->key !== $fdlPath->get('ctx')) {
+        if ($this->modx->context->key !== $fdPath->get('ctx')) {
             return false;
         }
-        return $fdlPath;
+        return $fdPath;
     }
 
     /**
@@ -1891,21 +1891,21 @@ class FileDownloadR
      */
     public function downloadFile($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
         ) {
             return false;
         }
-        $filePath = $fdlPath->get('filename');
+        $filePath = $fdPath->get('filename');
 
         $eventProperties = [
             'hash' => $hash,
-            'ctx' => $fdlPath->get('ctx'),
-            'mediaSourceId' => $fdlPath->get('media_source_id'),
+            'ctx' => $fdPath->get('ctx'),
+            'mediaSourceId' => $fdPath->get('media_source_id'),
             'filePath' => $filePath,
         ];
-        $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
+        $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
         $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
         if (is_array($result)) {
             if (in_array(false, $result, true)) {
@@ -2003,11 +2003,11 @@ class FileDownloadR
 
             $eventProperties = [
                 'hash' => $hash,
-                'ctx' => $fdlPath->get('ctx'),
-                'mediaSourceId' => $fdlPath->get('media_source_id'),
+                'ctx' => $fdPath->get('ctx'),
+                'mediaSourceId' => $fdPath->get('media_source_id'),
                 'filePath' => $filePath,
             ];
-            $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
+            $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
             $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
 
             exit();
@@ -2026,16 +2026,16 @@ class FileDownloadR
         if (!$this->getOption('countDownloads')) {
             return;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        $fdPath = $this->modx->getObject('fdPaths', [
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             return;
         }
         // save the new count
         $fdDownload = $this->modx->newObject('fdDownloads');
-        $fdDownload->set('path_id', $fdlPath->getPrimaryKey());
+        $fdDownload->set('path_id', $fdPath->getPrimaryKey());
         $fdDownload->set('referer', $this->getReferrer());
         $fdDownload->set('user', $this->modx->user->get('id'));
         $fdDownload->set('timestamp', time());
@@ -2223,26 +2223,26 @@ class FileDownloadR
      */
     public function deleteFile($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('ctx') !== $this->modx->context->key ||
-            $fdlPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('ctx') !== $this->modx->context->key ||
+            $fdPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
         ) {
             return false;
         }
-        $filePath = $fdlPath->get('filename');
+        $filePath = $fdPath->get('filename');
         if ($this->isAllowed('deleteGroups')) {
             if (empty($this->mediaSource)) {
                 if (file_exists($filePath)) {
                     try {
                         $eventProperties = [
-                            'hash' => $fdlPath->get('hash'),
-                            'ctx' => $fdlPath->get('ctx'),
-                            'mediaSourceId' => $fdlPath->get('media_source_id'),
+                            'hash' => $fdPath->get('hash'),
+                            'ctx' => $fdPath->get('ctx'),
+                            'mediaSourceId' => $fdPath->get('media_source_id'),
                             'filePath' => $filePath,
-                            'xtended' => json_decode($fdlPath->get('xtended'), true) ?? [],
+                            'xtended' => json_decode($fdPath->get('xtended'), true) ?? [],
                         ];
-                        $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
+                        $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
                         $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
                         if (is_array($result)) {
                             if (in_array(false, $result, true)) {
@@ -2250,7 +2250,7 @@ class FileDownloadR
                             }
                         }
                         $success = unlink($filePath);
-                        $eventProperties['success'] = $success && $fdlPath->remove();
+                        $eventProperties['success'] = $success && $fdPath->remove();
                         $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
                         if (is_array($result)) {
                             if (in_array(false, $result, true)) {
@@ -2276,7 +2276,7 @@ class FileDownloadR
                 }
             } else {
                 if ($this->mediaSource->removeObject($filePath)) {
-                    $fdlPath->remove();
+                    $fdPath->remove();
                     return true;
                 } else {
                     $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
@@ -2350,12 +2350,12 @@ class FileDownloadR
      */
     public function checkHash($ctx, $hash)
     {
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        $fdPath = $this->modx->getObject('fdPaths', [
             'ctx' => $ctx,
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             return false;
         }
         return true;

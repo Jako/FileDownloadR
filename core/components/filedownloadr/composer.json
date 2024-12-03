@@ -1,5 +1,7 @@
 {
   "name": "treehillstudio/filedownloadr",
+  "description": "Manage downloadable files without revealing the file url",
+  "version": "3.2.0-rc2",
   "authors": [
     {
       "name": "Rico Goldsky",

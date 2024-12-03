@@ -1,15 +1,15 @@
 {
   "name": "FileDownload R",
   "lowCaseName": "filedownloadr",
-  "description": "Display a list of downloadable files without revealing the file url.",
+  "description": "Manage downloadable files without revealing the file url",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.2.0-rc1",
+  "version": "3.2.0-rc2",
   "package": {
     "elements": {
       "snippets": [
         {
           "name": "FileDownload",
-          "description": "Snippet to list downloadable files.",
+          "description": "Snippet to list downloadable files",
           "file": "filedownload.snippet.php",
           "properties": [
             {
@@ -341,7 +341,7 @@
         },
         {
           "name": "FileDownloadLink",
-          "description": "Snippet to list downloadable files.",
+          "description": "Snippet to list a downloadable file link",
           "file": "filedownloadlink.snippet.php",
           "properties": [
             {
@@ -438,7 +438,7 @@
         },
         {
           "name": "FileDownloadCount",
-          "description": "Snippet to count downloadable files in a directory.",
+          "description": "Snippet to count downloadable files in a directory",
           "file": "filedownloadcount.snippet.php",
           "properties": [
             {
