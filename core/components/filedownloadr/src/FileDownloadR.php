@@ -1039,7 +1039,7 @@ class FileDownloadR
                 continue;
             }
 
-            $fullPath = $file['id'];
+            $fullPath = $file['path'];
 
             if ($file['type'] == 'file') {
                 $fileInfo = $this->fileInformation($fullPath);

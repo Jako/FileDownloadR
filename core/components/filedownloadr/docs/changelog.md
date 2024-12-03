@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for pagination with getPage/pdoPage
 - New OnFileDownloadBeforeFileDelete/OnFileDownloadAfterFileDelete plugin event
 
+### Fixed
+
+- Fix not found files in subdirectories of a media source
+
 ## [3.1.4] - 2024-03-12
 
 ### Fixed
