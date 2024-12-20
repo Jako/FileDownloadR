@@ -154,7 +154,7 @@ class FileDownloadR
             'extended_file_fields' => json_decode($this->getBoundOption('extended_file_fields', [], '[]'), true) ?? [],
         ]);
 
-        $this->parse = new Parse($modx);
+        $this->parse = new Parse($this->modx);
 
         $this->imgTypes = $this->getImagetypes();
         if (empty($this->imgTypes)) {
