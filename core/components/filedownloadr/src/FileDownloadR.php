@@ -3,7 +3,7 @@
  * FileDownloadR
  *
  * Copyright 2011-2022 by Rico Goldsky <goldsky@virtudraft.com>
- * Copyright 2023-2024 by Thomas Jakobi <office@treehillstudio.com>
+ * Copyright 2023-2025 by Thomas Jakobi <office@treehillstudio.com>
  *
  * @package filedownloadr
  * @subpackage classfile
@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.0-rc2';
+    public $version = '3.2.0-rc3';
 
     /**
      * The class options
@@ -360,7 +360,10 @@ class FileDownloadR
                 return $this->replacePathProperties($v);
             }, $subject);
         } else {
-            return str_replace(array_keys($replacements), array_values($replacements), $subject);
+            if (is_string($subject)) {
+                $subject = str_replace(array_keys($replacements), array_values($replacements), $subject);
+            }
+            return $subject;
         }
     }
 
@@ -917,7 +920,7 @@ class FileDownloadR
         if (empty($contents)) {
             return $contents;
         }
-        if (empty($this->getOption('groupByDirectory'))) {
+        if ($this->getOption('groupByDirectory')) {
             $sort = $this->groupByType($contents);
         } else {
             $sortPath = [];
@@ -1030,7 +1033,7 @@ class FileDownloadR
         // Add root path to the Download DB
         $this->getFilePathArray([
             'ctx' => $this->modx->context->key,
-            'filename' => $rootPath . $this->getOption('directorySeparator'),
+            'filename' => rtrim($rootPath, '/') . $this->getOption('directorySeparator'),
         ]);
 
         $excludes = $this->getOption('exclude_scan');
@@ -1040,9 +1043,10 @@ class FileDownloadR
             }
 
             $fullPath = $file['path'];
+            $relativePath = $file['pathRelative'];
 
             if ($file['type'] == 'file') {
-                $fileInfo = $this->fileInformation($fullPath);
+                $fileInfo = $this->fileInformation($relativePath);
                 if (!$fileInfo) {
                     continue;
                 }
@@ -1051,7 +1055,7 @@ class FileDownloadR
                 // a directory
                 $filePathArray = $this->getFilePathArray([
                     'ctx' => $this->modx->context->key,
-                    'filename' => $fullPath,
+                    'filename' => $relativePath,
                 ]);
                 if (!$filePathArray) {
                     continue;
