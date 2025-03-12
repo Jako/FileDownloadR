@@ -82,7 +82,7 @@ const bumpDocs = function () {
     return gulp.src([
         'mkdocs.yml',
     ], {base: './'})
-        .pipe(replace(/&copy; 2017(-\d{4})?/g, '&copy; ' + (year > 2017 ? '2017-' : '') + year))
+        .pipe(replace(/&copy; 2023(-\d{4})?/g, '&copy; ' + (year > 2023 ? '2023-' : '') + year))
         .pipe(gulp.dest('.'));
 };
 const bumpRequirements = function () {

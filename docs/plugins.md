@@ -8,14 +8,14 @@ code after each update of FileDownloadR).
 If you want to create your own plugins, the following plugin events are
 available after the installation of FileDownloadR:
 
-| Event                            | Properties                                |
-|----------------------------------|-------------------------------------------|
-| OnFileDownloadLoad               | -                                         |
-| OnFileDownloadBeforeDirOpen      | dirPath                                   |
-| OnFileDownloadAfterDirOpen       | dirPath, contents                         |
-| OnFileDownloadBeforeFileDownload | hash, ctx, filePath, mediaSourceId, count |
-| OnFileDownloadAfterFileDownload  | hash, ctx, filePath, mediaSourceId, count |
-| OnFileDownloadBeforeFileUpload   | filePath, fileName                        |
-| OnFileDownloadAfterFileUpload    | filePath, fileName, hash, resourceId      |
-| OnFileDownloadBeforeFileDelete   | hash, ctx, filePath, mediaSourceId, count |
-| OnFileDownloadAfterFileDelete    | hash, ctx, filePath, mediaSourceId, count |
+| Event                            | Properties                                                      |
+|----------------------------------|-----------------------------------------------------------------|
+| OnFileDownloadLoad               | -                                                               |
+| OnFileDownloadBeforeDirOpen      | dirPath                                                         |
+| OnFileDownloadAfterDirOpen       | dirPath, contents                                               |
+| OnFileDownloadBeforeFileDownload | hash, ctx, mediaSourceId, filePath, extended, count, count_user |
+| OnFileDownloadAfterFileDownload  | hash, ctx, mediaSourceId, filePath, extended, count, count_user |
+| OnFileDownloadBeforeFileUpload   | filePath, fileName, extended                                    |
+| OnFileDownloadAfterFileUpload    | filePath, fileName, extended, hash, resourceId                  |
+| OnFileDownloadBeforeFileDelete   | hash, ctx, mediaSourceId, filePath, extended, count, count_user |
+| OnFileDownloadAfterFileDelete    | hash, ctx, mediaSourceId, filePath, extended, count, count_user |

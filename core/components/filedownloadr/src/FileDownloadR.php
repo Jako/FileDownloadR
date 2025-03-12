@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.0-rc3';
+    public $version = '3.2.0-rc5';
 
     /**
      * The class options
@@ -1908,6 +1908,7 @@ class FileDownloadR
             'ctx' => $fdPath->get('ctx'),
             'mediaSourceId' => $fdPath->get('media_source_id'),
             'filePath' => $filePath,
+            'extended' => json_decode($fdPath->get('extended'), true) ?? [],
         ];
         $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
         $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
@@ -2010,6 +2011,7 @@ class FileDownloadR
                 'ctx' => $fdPath->get('ctx'),
                 'mediaSourceId' => $fdPath->get('media_source_id'),
                 'filePath' => $filePath,
+                'extended' => json_decode($fdPath->get('extended'), true) ?? [],
             ];
             $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
             $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
@@ -2244,7 +2246,7 @@ class FileDownloadR
                             'ctx' => $fdPath->get('ctx'),
                             'mediaSourceId' => $fdPath->get('media_source_id'),
                             'filePath' => $filePath,
-                            'xtended' => json_decode($fdPath->get('xtended'), true) ?? [],
+                            'extended' => json_decode($fdPath->get('extended'), true) ?? [],
                         ];
                         $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
                         $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
