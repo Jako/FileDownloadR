@@ -477,12 +477,12 @@ class FileDownloadR
         $getDir = $this->getAbsolutePath($path);
         $phs = [];
         if ($getDir) {
-            $filePathArray = $this->getFilePathArray([
+            $fdPath = $this->getFdPath([
                 'ctx' => $this->modx->context->key,
                 'filename' => $getDir,
             ]);
-            if ($filePathArray) {
-                $dirPath = rtrim($filePathArray['filename'], $this->getOption('directorySeparator'));
+            if ($fdPath) {
+                $dirPath = rtrim($fdPath->get('filename'), $this->getOption('directorySeparator'));
                 $phs = array_merge($this->options, [
                     'filename' => $this->basename($dirPath),
                 ]);
@@ -513,74 +513,6 @@ class FileDownloadR
             }
         }
         return $output;
-    }
-
-    /**
-     * Check the called file contents with the registered database.
-     *
-     * If it's not listed, auto save
-     * @param array $file Realpath filename / dirname
-     * @param boolean $autoCreate Auto create entry if it doesn't exist
-     * @return bool|array
-     */
-    private function getFilePathArray(array $file = [], $autoCreate = true)
-    {
-        if (empty($file)) {
-            return false;
-        }
-
-        if (empty($this->mediaSource)) {
-            $realPath = realpath($file['filename']);
-            if (empty($realPath)) {
-                return false;
-            }
-        } else {
-            $basePath = $this->getBasePath($file['filename']);
-            if (!empty($basePath)) {
-                $file['filename'] = str_replace($basePath, '', $file['filename']);
-            }
-        }
-
-        /** @var fdPaths $fdPath */
-        $fdPath = $this->modx->getObject('fdPaths', [
-            'ctx' => $file['ctx'],
-            'media_source_id' => $this->getOption('mediaSourceId'),
-            'filename' => $file['filename']
-        ]);
-        if (!$fdPath) {
-            if (!$autoCreate) {
-                return false;
-            }
-            $fdPath = $this->modx->newObject('fdPaths');
-            $fdPath->fromArray([
-                'ctx' => $file['ctx'],
-                'media_source_id' => $this->getOption('mediaSourceId'),
-                'filename' => $file['filename'],
-                'count' => 0,
-                'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
-            ]);
-            foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
-                $name = $extendedFileField['name'];
-                if ($name) {
-                    if (isset($file['extended'][$name])) {
-                        $fdPath->setExtendedField($name, $file['extended'][$name]);
-                    }
-                }
-            }
-            if ($fdPath->save() === false) {
-                $msg = $this->modx->lexicon('filedownloadr.counter_err_save');
-                $this->setError($msg);
-                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
-                return false;
-            }
-        }
-        $filePathArray = $fdPath->toArray();
-
-        $filePathArray['count'] = $this->modx->getCount('fdDownloads', [
-            'path_id' => $fdPath->getPrimaryKey()
-        ]);
-
-        return $filePathArray;
     }
 
     /**
@@ -954,8 +886,8 @@ class FileDownloadR
     {
         $scanDir = scandir($rootPath);
 
-        // Add root path to the Download DB
-        $this->getFilePathArray([
+        // Add root path to the Download DB if needed
+        $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => $rootPath . $this->getOption('directorySeparator'),
         ]);
@@ -979,11 +911,11 @@ class FileDownloadR
                 $contents[] = $fileInfo;
             } elseif ($this->getOption('browseDirectories')) {
                 // a directory
-                $filePathArray = $this->getFilePathArray([
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
                     'filename' => $fullPath . $this->getOption('directorySeparator'),
                 ]);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
 
@@ -992,11 +924,11 @@ class FileDownloadR
 
                 $unixDate = filemtime($fullPath);
                 $date = date($this->getOption('dateFormat'), $unixDate);
-                $link = $this->createLink($filePathArray['hash'], $filePathArray['ctx']);
+                $link = $this->createLink($fdPath->get('hash'), $fdPath->get('ctx'));
 
                 $imgType = $this->imgType('dir');
                 $dir = [
-                    'ctx' => $filePathArray['ctx'],
+                    'ctx' => $fdPath->get('ctx'),
                     'fullPath' => $fullPath,
                     'path' => $rootRealPath,
                     'filename' => $file,
@@ -1010,7 +942,7 @@ class FileDownloadR
                     'image' => $this->getOption('imgLocat') . $imgType,
                     'link' => $link['url'], // fallback
                     'url' => $link['url'],
-                    'hash' => $filePathArray['hash']
+                    'hash' => $fdPath->get('hash')
                 ];
                 $dir = $this->getDownloadCounts($dir, $fullPath);
                 $contents[] = $dir;
@@ -1030,8 +962,8 @@ class FileDownloadR
     {
         $scanDir = $this->mediaSource->getContainerList($rootPath);
 
-        // Add root path to the Download DB
-        $this->getFilePathArray([
+        // Add root path to the Download DB if needed
+        $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => rtrim($rootPath, '/') . $this->getOption('directorySeparator'),
         ]);
@@ -1053,11 +985,11 @@ class FileDownloadR
                 $contents[] = $fileInfo;
             } elseif ($this->getOption('browseDirectories')) {
                 // a directory
-                $filePathArray = $this->getFilePathArray([
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
                     'filename' => $relativePath,
                 ]);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
 
@@ -1076,11 +1008,11 @@ class FileDownloadR
                 }
 
                 $date = date($this->getOption('dateFormat'), $unixDate);
-                $link = $this->createLink($filePathArray['hash'], $filePathArray['ctx']);
+                $link = $this->createLink($fdPath->get('hash'), $fdPath->get('ctx'));
 
                 $imgType = $this->imgType('dir');
                 $dir = [
-                    'ctx' => $filePathArray['ctx'],
+                    'ctx' => $fdPath->get('ctx'),
                     'fullPath' => $fullPath,
                     'path' => $rootRealPath,
                     'filename' => $file['text'],
@@ -1094,7 +1026,7 @@ class FileDownloadR
                     'image' => $this->getOption('imgLocat') . $imgType,
                     'link' => $link['url'], // fallback
                     'url' => $link['url'],
-                    'hash' => $filePathArray['hash']
+                    'hash' => $fdPath->get('hash')
                 ];
                 $dir = $this->getDownloadCounts($dir, rtrim($fullPath, $this->getOption('directorySeparator')));
                 $contents[] = $dir;
@@ -1153,28 +1085,28 @@ class FileDownloadR
             return [];
         }
 
-        $filePathArray = $this->getFilePathArray([
+        $fdPath = $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => $fileRealPath,
         ]);
-        if (!$filePathArray) {
+        if (!$fdPath) {
             return [];
         }
 
         if ($this->getOption('directLink')) {
-            $link = $this->directLinkFileDownload($filePathArray['filename']);
+            $link = $this->directLinkFileDownload($fdPath->get('filename'));
             if (!$link) {
                 return [];
             }
         } else {
-            $link = $this->linkFileDownload($filePathArray['filename'], $filePathArray['hash'], $filePathArray['ctx']);
+            $link = $this->linkFileDownload($fdPath->get('filename'), $fdPath->get('hash'), $fdPath->get('ctx'));
         }
-        $linkdelete = $this->linkFileDelete($filePathArray['hash'], $filePathArray['ctx']);
+        $linkdelete = $this->linkFileDelete($fdPath->get('hash'), $fdPath->get('ctx'));
 
         $unixDate = filemtime($fileRealPath);
         $date = date($this->getOption('dateFormat'), $unixDate);
         $info = [
-            'ctx' => $filePathArray['ctx'],
+            'ctx' => $fdPath->get('ctx'),
             'fullPath' => $fileRealPath,
             'path' => dirname($fileRealPath),
             'filename' => $baseName,
@@ -1189,10 +1121,10 @@ class FileDownloadR
             'link' => $link['url'], // fallback
             'url' => $link['url'],
             'deleteurl' => $linkdelete['url'],
-            'hash' => $filePathArray['hash'],
-            'extended' => $filePathArray['extended']
+            'hash' => $fdPath->get('hash'),
+            'extended' => $fdPath->get('extended')
         ];
-        return $this->getFileCount($info, $filePathArray['id']);
+        return $this->getFileCount($info, $fdPath->get('id'));
     }
 
     /**
@@ -1663,17 +1595,17 @@ class FileDownloadR
                 'filename' => $absPath,
             ]);
             if (!$fdPath) {
-                $filePathArray = $this->getFilePathArray([
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
                     'filename' => $absPath,
                 ], false);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
                 $fdPath = $this->modx->getObject('fdPaths', [
                     'ctx' => $this->modx->context->key,
                     'media_source_id' => $this->getOption('mediaSourceId'),
-                    'filename' => $filePathArray['filename']
+                    'filename' => $fdPath->get('filename')
                 ]);
             }
             $hash = $fdPath->get('hash');
@@ -1905,6 +1837,7 @@ class FileDownloadR
 
         $eventProperties = [
             'hash' => $hash,
+            'fdPath' => $fdPath,
             'ctx' => $fdPath->get('ctx'),
             'mediaSourceId' => $fdPath->get('media_source_id'),
             'filePath' => $filePath,
@@ -1932,26 +1865,29 @@ class FileDownloadR
                 if (file_exists($realFilePath)) {
                     $fileExists = true;
                 }
-            } elseif ($this->mediaSource->getObjectContents($filePath)) {
-                try {
-                    $objectContent = $this->mediaSource->getObjectContents($filePath);
-                    if (!empty($content)) {
-                        $temp = tempnam(sys_get_temp_dir(), 'fdl_' . time() . '_' . pathinfo($filename, PATHINFO_FILENAME) . '_');
-                        $handle = fopen($temp, "r+b");
-                        fwrite($handle, $objectContent['content']);
-                        fseek($handle, 0);
-                        fclose($handle);
-                        $realFilePath = $temp;
-                        $fileExists = true;
-                    } else {
-                        $msg = $this->modx->lexicon('filedownloadr.remote_err_file_empty');
+            } else {
+                $objectContent = $this->mediaSource->getObjectContents($filePath);
+                // $objectContent should be an array for remote media sources
+                if (is_array($objectContent)) {
+                    try {
+                        if (!empty($objectContent)) {
+                            $temp = tempnam(sys_get_temp_dir(), 'fdl_' . time() . '_' . pathinfo($filename, PATHINFO_FILENAME) . '_');
+                            $handle = fopen($temp, "r+b");
+                            fwrite($handle, $objectContent['content']);
+                            fseek($handle, 0);
+                            fclose($handle);
+                            $realFilePath = $temp;
+                            $fileExists = true;
+                        } else {
+                            $msg = $this->modx->lexicon('filedownloadr.remote_err_file_empty');
+                            $this->setError($msg);
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                        }
+                    } catch (Exception $e) {
+                        $msg = $this->modx->lexicon('filedownloadr.remote_err_file_not_available');
                         $this->setError($msg);
                         $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                     }
-                } catch (Exception $e) {
-                    $msg = $this->modx->lexicon('filedownloadr.remote_err_file_not_available');
-                    $this->setError($msg);
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                 }
             }
         }
@@ -2008,6 +1944,7 @@ class FileDownloadR
 
             $eventProperties = [
                 'hash' => $hash,
+                'fdPath' => $fdPath,
                 'ctx' => $fdPath->get('ctx'),
                 'mediaSourceId' => $fdPath->get('media_source_id'),
                 'filePath' => $filePath,
@@ -2189,16 +2126,16 @@ class FileDownloadR
             }
 
             // Get the upload directory database entry
-            $filePathArray = $this->getFilePathArray([
+            $fdUploadPath = $this->getFdPath([
                 'ctx' => $this->modx->context->key,
                 'filename' => $filePath . $this->getOption('directorySeparator'),
             ]);
-            if (!$filePathArray) {
+            if (!$fdUploadPath) {
                 return false;
             }
 
             // Create the uploaded file database entry
-            $fileArray = $this->getFilePathArray([
+            $fdPath = $this->getFdPath([
                 'ctx' => $this->modx->context->key,
                 'filename' => $filePath . $this->getOption('directorySeparator') . $fileName,
                 'extended' => $extendedFields,
@@ -2208,7 +2145,7 @@ class FileDownloadR
                 'filePath' => $filePath,
                 'fileName' => $fileName,
                 'extended' => $extendedFields,
-                'hash' => $fileArray['hash'],
+                'hash' => $fdPath->get('hash'),
                 'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
             $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
@@ -2398,5 +2335,81 @@ class FileDownloadR
             }
         }
         return $result;
+    }
+
+    /**
+     * Check the called file contents with the registered database.
+     *
+     * If it's not listed, auto save
+     * @param array $file
+     * @param bool $autoCreate
+     * @return \fdPaths|null
+     */
+    private function getFdPath($file, $autoCreate = true)
+    {
+        if (empty($file)) {
+            return null;
+        }
+
+        if (empty($this->mediaSource)) {
+            $realPath = realpath($file['filename']);
+            if (empty($realPath)) {
+                return null;
+            }
+        } else {
+            $basePath = $this->getBasePath($file['filename']);
+            if (!empty($basePath)) {
+                $file['filename'] = str_replace($basePath, '', $file['filename']);
+            }
+        }
+
+        /** @var fdPaths $fdPath */
+        $fdPath = $this->modx->getObject('fdPaths', [
+            'ctx' => $file['ctx'],
+            'media_source_id' => $this->getOption('mediaSourceId'),
+            'filename' => $file['filename']
+        ]);
+        if (!$fdPath) {
+            if (!$autoCreate) {
+                return null;
+            }
+            /** @var fdPaths $fdPath */
+            $fdPath = $this->modx->newObject('fdPaths');
+            $fdPath->fromArray([
+                'ctx' => $file['ctx'],
+                'media_source_id' => $this->getOption('mediaSourceId'),
+                'filename' => $file['filename'],
+                'count' => 0,
+                'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
+            ]);
+            $fdPath = $this->prepareExtendedFields($file['extended'] ?? [], $fdPath);
+            if ($fdPath->save() === false) {
+                $msg = $this->modx->lexicon('filedownloadr.counter_err_save');
+                $this->setError($msg);
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                return null;
+            }
+        }
+        return $fdPath;
+    }
+
+    /**
+     * Prepare the extended fields
+     *
+     * @param array $extendedFields
+     * @param fdPaths $fdPath
+     * @return fdPaths
+     */
+    private function prepareExtendedFields($extendedFields, $fdPath)
+    {
+        foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
+            $name = $extendedFileField['name'];
+            if ($name) {
+                if (isset($extendedFields[$name])) {
+                    $fdPath->setExtendedField($name, $extendedFields[$name]);
+                }
+            }
+        }
+        return $fdPath;
     }
 }
