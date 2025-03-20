@@ -12,16 +12,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New filedownloadr.extended_file_fields system setting to add extended fields for each uploaded file
 - Support for pagination with getPage/pdoPage
 - New OnFileDownloadBeforeFileDelete/OnFileDownloadAfterFileDelete plugin event
+- Log fatal errors in the plugin events.
+
+### Changed
+
+- Refactor the plugin code of the deactivated FileDownloadEmail and FileDownloadFormSave plugins
 
 ### Fixed
 
 - Fix not found files in subdirectories of a media source
 
+### Removed
+
+- Drop special handling for Internet Explorer with zip file downloads
+
 ## [3.1.4] - 2024-03-12
 
 ### Fixed
 
-- Fix xPDO warning 'Encountered empty IN condition with key' if the path is empty
+- Fix xPDO warning 'Encountered empty IN condition with key' when the path is empty
 - imgTypes property of the FileDownloadR snippet has no effect [#6]
 
 ## [3.1.3] - 2024-01-29

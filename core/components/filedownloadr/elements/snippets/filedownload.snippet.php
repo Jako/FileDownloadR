@@ -13,7 +13,7 @@ use TreehillStudio\FileDownloadR\Snippets\FileDownloadSnippet;
 
 $corePath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/');
 /** @var FileDownloadR $filedownloadr */
-$filedownloadr = $modx->getService('filedownloadr', 'FileDownloadR', $corePath . 'model/filedownloadr/', [
+$filedownloadr = $modx->getService('filedownloadr', FileDownloadR::class, $corePath . 'model/filedownloadr/', [
     'core_path' => $corePath
 ]);
 

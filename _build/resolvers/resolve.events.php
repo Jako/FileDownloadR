@@ -82,8 +82,6 @@ $events = [
     'OnFileDownloadAfterFileDownload',
     'OnFileDownloadBeforeFileUpload',
     'OnFileDownloadAfterFileUpload',
-    'OnFileDownloadBeforeFileRemove',
-    'OnFileDownloadAfterFileRemove',
     'OnFileDownloadBeforeFileDelete',
     'OnFileDownloadAfterFileDelete',
 ];

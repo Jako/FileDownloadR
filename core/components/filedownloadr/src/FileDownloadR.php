@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.0-rc5';
+    public $version = '3.2.0-rc7';
 
     /**
      * The class options
@@ -648,7 +648,12 @@ class FileDownloadR
      */
     public function getContents()
     {
-        $this->modx->invokeEvent('OnFileDownloadLoad');
+        try {
+            $this->modx->invokeEvent('OnFileDownloadLoad');
+        } catch (Exception $e) {
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadLoad: ' . $e->getMessage());
+            return [];
+        }
 
         $dirContents = [];
         if (!empty($this->getOption('getDir')) || $this->mediaSource) {
@@ -694,9 +699,14 @@ class FileDownloadR
                 }
             }
 
-            $result = $this->modx->invokeEvent('OnFileDownloadBeforeDirOpen', [
-                'dirPath' => $rootPath,
-            ]);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadBeforeDirOpen', [
+                    'dirPath' => $rootPath,
+                ]);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeDirOpen: ' . $e->getMessage());
+                return [];
+            }
             if (is_array($result)) {
                 foreach ($result as $msg) {
                     if ($msg === false) {
@@ -713,10 +723,15 @@ class FileDownloadR
                 $contents = $this->getMediasourceDirContents($rootPath, $contents);
             }
 
-            $result = $this->modx->invokeEvent('OnFileDownloadAfterDirOpen', [
-                'dirPath' => $rootPath,
-                'contents' => $contents,
-            ]);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadAfterDirOpen', [
+                    'dirPath' => $rootPath,
+                    'contents' => $contents,
+                ]);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterDirOpen: ' . $e->getMessage());
+                return [];
+            }
             if (is_array($result)) {
                 foreach ($result as $msg) {
                     if ($msg === false) {
@@ -1088,6 +1103,7 @@ class FileDownloadR
         $fdPath = $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => $fileRealPath,
+            'media'
         ]);
         if (!$fdPath) {
             return [];
@@ -1841,10 +1857,15 @@ class FileDownloadR
             'ctx' => $fdPath->get('ctx'),
             'mediaSourceId' => $fdPath->get('media_source_id'),
             'filePath' => $filePath,
-            'extended' => json_decode($fdPath->get('extended'), true) ?? [],
+            'extended' => $fdPath->get('extended') ?? [],
         ];
         $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
-        $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
+        try {
+            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
+        } catch (Exception $e) {
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDownload: ' . $e->getMessage());
+            return false;
+        }
         if (is_array($result)) {
             if (in_array(false, $result, true)) {
                 return false;
@@ -1892,14 +1913,7 @@ class FileDownloadR
             }
         }
         if ($fileExists) {
-            // required for IE
-            if (ini_get('zlib.output_compression')) {
-                ini_set('zlib.output_compression', 'Off');
-            }
-
             @set_time_limit(300);
-            ob_end_clean(); // added to fix ZIP file corruption
-            ob_start(); // added to fix ZIP file corruption
 
             header('Pragma: public'); // required
             header('Expires: 0'); // no cache
@@ -1907,18 +1921,13 @@ class FileDownloadR
             header('Cache-Control: private', false);
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($realFilePath)) . ' GMT');
             header('Content-Description: File Transfer');
-            header('Content-Type:'); // added to fix ZIP file corruption
-            header('Content-Type: "application/force-download"');
+            header('Content-Type: "' . mime_content_type($realFilePath) . '"');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
-            header('Content-Transfer-Encoding: binary');
             header('Content-Length: ' . filesize($realFilePath)); // provide file size
             header('Connection: close');
-            sleep(1);
 
             // Close the session to allow for header() to be sent
             session_write_close();
-            ob_flush();
-            flush();
 
             $chunksize = 1024 * 1024; // how many bytes per chunk
             $handle = @fopen($realFilePath, 'rb');
@@ -1931,7 +1940,6 @@ class FileDownloadR
                     die();
                 }
                 echo $buffer;
-                ob_flush();
                 flush();
             }
             fclose($handle);
@@ -1948,10 +1956,15 @@ class FileDownloadR
                 'ctx' => $fdPath->get('ctx'),
                 'mediaSourceId' => $fdPath->get('media_source_id'),
                 'filePath' => $filePath,
-                'extended' => json_decode($fdPath->get('extended'), true) ?? [],
+                'extended' => $fdPath->get('extended') ?? [],
             ];
             $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
-            $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
+            try {
+                $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDownload: ' . $e->getMessage());
+                exit();
+            }
 
             exit();
         }
@@ -2061,7 +2074,7 @@ class FileDownloadR
         $allowedTypes = $this->getOption('uploadFileTypes');
 
         if ($this->isAllowed('uploadGroups')) {
-            // Es wurde eine Datei hochgeladen und dabei sind keine Fehler aufgetreten
+            // A file has been uploaded and no errors have occurred
             if (!empty($_FILES) && is_array($_FILES['fdupload']) && $_FILES['fdupload']['error'] == UPLOAD_ERR_OK) {
                 $type = mime_content_type($_FILES['fdupload']['tmp_name']);
                 if (in_array($type, $allowedTypes)) {
@@ -2083,11 +2096,18 @@ class FileDownloadR
 
             $extendedFields = $this->getPostExtendedFields();
             $eventProperties = [
+                'mediaSourceId' => $this->mediaSource,
                 'filePath' => $filePath,
                 'fileName' => $fileName,
-                'extended' => $extendedFields
+                'extended' => $extendedFields,
+                'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
-            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileUpload', $eventProperties);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileUpload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileUpload: ' . $e->getMessage());
+                return false;
+            }
             if (is_array($result)) {
                 if (in_array(false, $result, true)) {
                     return false;
@@ -2142,13 +2162,19 @@ class FileDownloadR
             ]);
 
             $eventProperties = [
+                'hash' => $fdPath->get('hash'),
+                'fdPath' => $fdPath,
                 'filePath' => $filePath,
                 'fileName' => $fileName,
                 'extended' => $extendedFields,
-                'hash' => $fdPath->get('hash'),
                 'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
-            $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileUpload: ' . $e->getMessage());
+                return false;
+            }
             if (is_array($result)) {
                 if (in_array(false, $result, true)) {
                     return false;
@@ -2180,25 +2206,45 @@ class FileDownloadR
                     try {
                         $eventProperties = [
                             'hash' => $fdPath->get('hash'),
+                            'fdPath' => $fdPath,
                             'ctx' => $fdPath->get('ctx'),
                             'mediaSourceId' => $fdPath->get('media_source_id'),
                             'filePath' => $filePath,
-                            'extended' => json_decode($fdPath->get('extended'), true) ?? [],
+                            'extended' => $fdPath->get('extended') ?? [],
                         ];
                         $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
-                        $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                        try {
+                            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                        } catch (Exception $e) {
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDelete: ' . $e->getMessage());
+                            return false;
+                        }
                         if (is_array($result)) {
                             if (in_array(false, $result, true)) {
                                 return false;
                             }
                         }
-                        $success = unlink($filePath);
-                        $eventProperties['success'] = $success && $fdPath->remove();
-                        $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
-                        if (is_array($result)) {
-                            if (in_array(false, $result, true)) {
+                        unlink($filePath);
+                        if ($fdPath->remove()) {
+                            try {
+                                $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
+                            } catch (Exception $e) {
+                                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDelete: ' . $e->getMessage());
                                 return false;
                             }
+                            if (is_array($result)) {
+                                if (in_array(false, $result, true)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
+                                'file' => pathinfo($filePath, PATHINFO_BASENAME)
+                            ]);
+                            $this->setError($msg);
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                            return false;
                         }
                     } catch (Exception $e) {
                         $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
@@ -2208,7 +2254,6 @@ class FileDownloadR
                         $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                         return false;
                     }
-                    return true;
                 } else {
                     $msg = $this->modx->lexicon('filedownloadr.file_err_not_exist', [
                         'file' => pathinfo($filePath, PATHINFO_BASENAME)
@@ -2218,9 +2263,47 @@ class FileDownloadR
                     return false;
                 }
             } else {
+                $eventProperties = [
+                    'hash' => $fdPath->get('hash'),
+                    'fdPath' => $fdPath,
+                    'ctx' => $fdPath->get('ctx'),
+                    'mediaSourceId' => $fdPath->get('media_source_id'),
+                    'filePath' => $filePath,
+                    'extended' => $fdPath->get('extended') ?? [],
+                ];
+                $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
+                try {
+                    $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                } catch (Exception $e) {
+                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDelete: ' . $e->getMessage());
+                    return false;
+                }
+                if (is_array($result)) {
+                    if (in_array(false, $result, true)) {
+                        return false;
+                    }
+                }
                 if ($this->mediaSource->removeObject($filePath)) {
-                    $fdPath->remove();
-                    return true;
+                    if ($fdPath->remove()) {
+                        try {
+                            $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
+                        } catch (Exception $e) {
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDelete: ' . $e->getMessage());
+                            return false;
+                        }
+                        if (is_array($result)) {
+                            if (in_array(false, $result, true)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else {
+                        $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
+                            'file' => pathinfo($filePath, PATHINFO_BASENAME)
+                        ]);
+                        $this->setError($msg);
+                        $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                    }
                 } else {
                     $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
                         'file' => pathinfo($filePath, PATHINFO_BASENAME)
