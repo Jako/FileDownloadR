@@ -25,6 +25,7 @@ class OnFileDownloadLoad extends Plugin
             $errMsg = 'Unable to load FormIt or FormSave';
             $this->modx->setPlaceholder($this->filedownloadr->getOption('prefix') . 'error_message', $errMsg);
             $this->modx->log(xPDO::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin FormSave');
-       }
+            $this->modx->event->output($errMsg);
+        }
     }
 }

@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.0-rc7';
+    public $version = '3.2.0';
 
     /**
      * The class options
@@ -2096,7 +2096,7 @@ class FileDownloadR
 
             $extendedFields = $this->getPostExtendedFields();
             $eventProperties = [
-                'mediaSourceId' => $this->mediaSource,
+                'mediaSourceId' => $this->mediaSource->get('id'),
                 'filePath' => $filePath,
                 'fileName' => $fileName,
                 'extended' => $extendedFields,
@@ -2381,10 +2381,7 @@ class FileDownloadR
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdPath) {
-            return false;
-        }
-        return true;
+        return (!$fdPath) ? false : true;
     }
 
     /**
