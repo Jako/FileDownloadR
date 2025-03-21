@@ -3,7 +3,7 @@
  * FileDownloadR
  *
  * Copyright 2011-2022 by Rico Goldsky <goldsky@virtudraft.com>
- * Copyright 2023-2024 by Thomas Jakobi <office@treehillstudio.com>
+ * Copyright 2023-2025 by Thomas Jakobi <office@treehillstudio.com>
  *
  * @package filedownloadr
  * @subpackage classfile
@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.1.4';
+    public $version = '3.2.0';
 
     /**
      * The class options
@@ -130,9 +130,9 @@ class FileDownloadR
         ], $options);
 
         $this->_output = [
-            'rows' => '',
-            'dirRows' => '',
-            'fileRows' => ''
+            'rows' => [],
+            'dirRows' => [],
+            'fileRows' => []
         ];
 
         $lexicon = $this->modx->getService('lexicon', modLexicon::class);
@@ -150,10 +150,11 @@ class FileDownloadR
             'imgTypes' => 'fdimages',
             'encoding' => 'utf-8',
             'exclude_scan' => $this->getExplodedOption('exclude_scan', [], '.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store'),
-            'email_props' => $this->getJsonOption('email_props', [], '')
+            'email_props' => $this->getJsonOption('email_props', [], ''),
+            'extended_file_fields' => json_decode($this->getBoundOption('extended_file_fields', [], '[]'), true) ?? [],
         ]);
 
-        $this->parse = new Parse($modx);
+        $this->parse = new Parse($this->modx);
 
         $this->imgTypes = $this->getImagetypes();
         if (empty($this->imgTypes)) {
@@ -175,6 +176,7 @@ class FileDownloadR
         $this->options['getDir'] = !empty($this->getOption('getDir')) ? $this->checkPath($this->getOption('getDir')) : '';
         $this->options['getFile'] = !empty($this->getOption('getFile')) ? $this->checkPath($this->getOption('getFile')) : '';
         $this->options['origDir'] = $this->options['getDir'];
+        $this->options['extendedFields'] = !empty($this->options['extended_file_fields']);
         $this->options = $this->replacePathProperties($this->options);
     }
 
@@ -245,6 +247,33 @@ class FileDownloadR
     }
 
     /**
+     * Get Bound Option
+     *
+     * @param string $key
+     * @param array $options
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getBoundOption($key, $options = [], $default = null)
+    {
+        $value = trim($this->getOption($key, $options, $default));
+        if (strpos($value, '@FILE') === 0) {
+            $path = trim(substr($value, strlen('@FILE')));
+            // Sanitize to avoid ../ style path traversal
+            $path = preg_replace(["/\.*[\/|\\\]/i", "/[\/|\\\]+/i"], ['/', '/'], $path);
+            // Include only files inside the MODX base path
+            if (strpos($path, MODX_BASE_PATH) === 0 && file_exists($path)) {
+                $value = file_get_contents($path);
+            }
+        } elseif (strpos($value, '@CHUNK') === 0) {
+            $name = trim(substr($value, strlen('@CHUNK')));
+            $chunk = $this->modx->getObject('modChunk', ['name' => $name]);
+            $value = ($chunk) ? $chunk->get('snippet') : '';
+        }
+        return $value;
+    }
+
+    /**
      * Retrieve the images for the specified file extensions.
      *
      * @return array file type's images
@@ -282,8 +311,8 @@ class FileDownloadR
         ];
         $cleanPaths = [];
         if (!empty($paths)) {
-            $xPath = @explode(',', $paths);
-            foreach ($xPath as $path) {
+            $paths = explode(',', $paths);
+            foreach ($paths as $path) {
                 if (empty($path)) {
                     continue;
                 }
@@ -327,13 +356,14 @@ class FileDownloadR
             '[[++base_path]]' => $this->modx->getOption('base_path')
         ];
         if (is_array($subject)) {
-            $result = [];
-            foreach ($subject as $k => $v) {
-                $result[$k] = $this->replacePathProperties($v);
-            }
-            return $result;
+            return array_map(function ($v) {
+                return $this->replacePathProperties($v);
+            }, $subject);
         } else {
-            return str_replace(array_keys($replacements), array_values($replacements), $subject);
+            if (is_string($subject)) {
+                $subject = str_replace(array_keys($replacements), array_values($replacements), $subject);
+            }
+            return $subject;
         }
     }
 
@@ -399,9 +429,9 @@ class FileDownloadR
 
         // Clear previous output for subsequent snippet calls
         $this->_output = [
-            'rows' => '',
-            'dirRows' => '',
-            'fileRows' => ''
+            'rows' => [],
+            'dirRows' => [],
+            'fileRows' => []
         ];
         $this->_error = [];
 
@@ -436,7 +466,6 @@ class FileDownloadR
         $this->imgTypes = $this->getImagetypes();
     }
 
-
     /**
      * Get the download counts of a path
      *
@@ -448,12 +477,12 @@ class FileDownloadR
         $getDir = $this->getAbsolutePath($path);
         $phs = [];
         if ($getDir) {
-            $filePathArray = $this->getFilePathArray([
+            $fdPath = $this->getFdPath([
                 'ctx' => $this->modx->context->key,
                 'filename' => $getDir,
             ]);
-            if ($filePathArray) {
-                $dirPath = rtrim($filePathArray['filename'], $this->getOption('directorySeparator'));
+            if ($fdPath) {
+                $dirPath = rtrim($fdPath->get('filename'), $this->getOption('directorySeparator'));
                 $phs = array_merge($this->options, [
                     'filename' => $this->basename($dirPath),
                 ]);
@@ -484,64 +513,6 @@ class FileDownloadR
             }
         }
         return $output;
-    }
-
-    /**
-     * Check the called file contents with the registered database.
-     *
-     * If it's not listed, auto save
-     * @param array $file Realpath filename / dirname
-     * @param boolean $autoCreate Auto create entry if it doesn't exist
-     * @return bool|array
-     */
-    private function getFilePathArray(array $file = [], $autoCreate = true)
-    {
-        if (empty($file)) {
-            return false;
-        }
-
-        if (empty($this->mediaSource)) {
-            $realPath = realpath($file['filename']);
-            if (empty($realPath)) {
-                return false;
-            }
-        } else {
-            $basePath = $this->getBasePath($file['filename']);
-            if (!empty($basePath)) {
-                $file['filename'] = str_replace($basePath, '', $file['filename']);
-            }
-        }
-
-        $fdlPath = $this->modx->getObject('fdPaths', [
-            'ctx' => $file['ctx'],
-            'media_source_id' => $this->getOption('mediaSourceId'),
-            'filename' => $file['filename']
-        ]);
-        if (!$fdlPath) {
-            if (!$autoCreate) {
-                return false;
-            }
-            $fdlPath = $this->modx->newObject('fdPaths');
-            $fdlPath->fromArray([
-                'ctx' => $file['ctx'],
-                'media_source_id' => $this->getOption('mediaSourceId'),
-                'filename' => $file['filename'],
-                'count' => 0,
-                'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
-            ]);
-            if ($fdlPath->save() === false) {
-                $msg = $this->modx->lexicon('filedownloadr.counter_err_save');
-                $this->setError($msg);
-                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
-                return false;
-            }
-        }
-        $checked = $fdlPath->toArray();
-        $checked['count'] = $this->modx->getCount('fdDownloads', [
-            'path_id' => $fdlPath->getPrimaryKey()
-        ]);
-
-        return $checked;
     }
 
     /**
@@ -677,7 +648,12 @@ class FileDownloadR
      */
     public function getContents()
     {
-        $this->modx->invokeEvent('OnFileDownloadLoad');
+        try {
+            $this->modx->invokeEvent('OnFileDownloadLoad');
+        } catch (Exception $e) {
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadLoad: ' . $e->getMessage());
+            return [];
+        }
 
         $dirContents = [];
         if (!empty($this->getOption('getDir')) || $this->mediaSource) {
@@ -723,9 +699,14 @@ class FileDownloadR
                 }
             }
 
-            $result = $this->modx->invokeEvent('OnFileDownloadBeforeDirOpen', [
-                'dirPath' => $rootPath,
-            ]);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadBeforeDirOpen', [
+                    'dirPath' => $rootPath,
+                ]);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeDirOpen: ' . $e->getMessage());
+                return [];
+            }
             if (is_array($result)) {
                 foreach ($result as $msg) {
                     if ($msg === false) {
@@ -742,10 +723,15 @@ class FileDownloadR
                 $contents = $this->getMediasourceDirContents($rootPath, $contents);
             }
 
-            $result = $this->modx->invokeEvent('OnFileDownloadAfterDirOpen', [
-                'dirPath' => $rootPath,
-                'contents' => $contents,
-            ]);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadAfterDirOpen', [
+                    'dirPath' => $rootPath,
+                    'contents' => $contents,
+                ]);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterDirOpen: ' . $e->getMessage());
+                return [];
+            }
             if (is_array($result)) {
                 foreach ($result as $msg) {
                     if ($msg === false) {
@@ -881,7 +867,7 @@ class FileDownloadR
         if (empty($contents)) {
             return $contents;
         }
-        if (empty($this->getOption('groupByDirectory'))) {
+        if ($this->getOption('groupByDirectory')) {
             $sort = $this->groupByType($contents);
         } else {
             $sortPath = [];
@@ -895,7 +881,7 @@ class FileDownloadR
             $sort = [];
             foreach ($sortPath as $k => $path) {
                 // path name for the &groupByDirectory template: tpl-group
-                $this->_output['rows'] .= $this->tplDirectory($k);
+                $this->_output['rows'][] = $this->tplDirectory($k);
 
                 $sort['path'][$k] = $this->groupByType($path);
             }
@@ -915,8 +901,8 @@ class FileDownloadR
     {
         $scanDir = scandir($rootPath);
 
-        // Add root path to the Download DB
-        $this->getFilePathArray([
+        // Add root path to the Download DB if needed
+        $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => $rootPath . $this->getOption('directorySeparator'),
         ]);
@@ -932,6 +918,7 @@ class FileDownloadR
             $fileType = @filetype($fullPath);
 
             if ($fileType == 'file') {
+                // a file
                 $fileInfo = $this->fileInformation($fullPath);
                 if (!$fileInfo) {
                     continue;
@@ -939,11 +926,11 @@ class FileDownloadR
                 $contents[] = $fileInfo;
             } elseif ($this->getOption('browseDirectories')) {
                 // a directory
-                $filePathArray = $this->getFilePathArray([
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
                     'filename' => $fullPath . $this->getOption('directorySeparator'),
                 ]);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
 
@@ -952,11 +939,11 @@ class FileDownloadR
 
                 $unixDate = filemtime($fullPath);
                 $date = date($this->getOption('dateFormat'), $unixDate);
-                $link = $this->createLink($filePathArray['hash'], $filePathArray['ctx']);
+                $link = $this->createLink($fdPath->get('hash'), $fdPath->get('ctx'));
 
                 $imgType = $this->imgType('dir');
                 $dir = [
-                    'ctx' => $filePathArray['ctx'],
+                    'ctx' => $fdPath->get('ctx'),
                     'fullPath' => $fullPath,
                     'path' => $rootRealPath,
                     'filename' => $file,
@@ -970,7 +957,7 @@ class FileDownloadR
                     'image' => $this->getOption('imgLocat') . $imgType,
                     'link' => $link['url'], // fallback
                     'url' => $link['url'],
-                    'hash' => $filePathArray['hash']
+                    'hash' => $fdPath->get('hash')
                 ];
                 $dir = $this->getDownloadCounts($dir, $fullPath);
                 $contents[] = $dir;
@@ -990,10 +977,10 @@ class FileDownloadR
     {
         $scanDir = $this->mediaSource->getContainerList($rootPath);
 
-        // Add root path to the Download DB
-        $this->getFilePathArray([
+        // Add root path to the Download DB if needed
+        $this->getFdPath([
             'ctx' => $this->modx->context->key,
-            'filename' => $rootPath . $this->getOption('directorySeparator'),
+            'filename' => rtrim($rootPath, '/') . $this->getOption('directorySeparator'),
         ]);
 
         $excludes = $this->getOption('exclude_scan');
@@ -1002,21 +989,22 @@ class FileDownloadR
                 continue;
             }
 
-            $fullPath = $file['id'];
+            $fullPath = $file['path'];
+            $relativePath = $file['pathRelative'];
 
             if ($file['type'] == 'file') {
-                $fileInfo = $this->fileInformation($fullPath);
+                $fileInfo = $this->fileInformation($relativePath);
                 if (!$fileInfo) {
                     continue;
                 }
                 $contents[] = $fileInfo;
             } elseif ($this->getOption('browseDirectories')) {
                 // a directory
-                $filePathArray = $this->getFilePathArray([
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
-                    'filename' => $fullPath,
+                    'filename' => $relativePath,
                 ]);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
 
@@ -1035,11 +1023,11 @@ class FileDownloadR
                 }
 
                 $date = date($this->getOption('dateFormat'), $unixDate);
-                $link = $this->createLink($filePathArray['hash'], $filePathArray['ctx']);
+                $link = $this->createLink($fdPath->get('hash'), $fdPath->get('ctx'));
 
                 $imgType = $this->imgType('dir');
                 $dir = [
-                    'ctx' => $filePathArray['ctx'],
+                    'ctx' => $fdPath->get('ctx'),
                     'fullPath' => $fullPath,
                     'path' => $rootRealPath,
                     'filename' => $file['text'],
@@ -1053,7 +1041,7 @@ class FileDownloadR
                     'image' => $this->getOption('imgLocat') . $imgType,
                     'link' => $link['url'], // fallback
                     'url' => $link['url'],
-                    'hash' => $filePathArray['hash']
+                    'hash' => $fdPath->get('hash')
                 ];
                 $dir = $this->getDownloadCounts($dir, rtrim($fullPath, $this->getOption('directorySeparator')));
                 $contents[] = $dir;
@@ -1112,28 +1100,29 @@ class FileDownloadR
             return [];
         }
 
-        $filePathArray = $this->getFilePathArray([
+        $fdPath = $this->getFdPath([
             'ctx' => $this->modx->context->key,
             'filename' => $fileRealPath,
+            'media'
         ]);
-        if (!$filePathArray) {
+        if (!$fdPath) {
             return [];
         }
 
         if ($this->getOption('directLink')) {
-            $link = $this->directLinkFileDownload($filePathArray['filename']);
+            $link = $this->directLinkFileDownload($fdPath->get('filename'));
             if (!$link) {
                 return [];
             }
         } else {
-            $link = $this->linkFileDownload($filePathArray['filename'], $filePathArray['hash'], $filePathArray['ctx']);
+            $link = $this->linkFileDownload($fdPath->get('filename'), $fdPath->get('hash'), $fdPath->get('ctx'));
         }
-        $linkdelete = $this->linkFileDelete($filePathArray['hash'], $filePathArray['ctx']);
+        $linkdelete = $this->linkFileDelete($fdPath->get('hash'), $fdPath->get('ctx'));
 
         $unixDate = filemtime($fileRealPath);
         $date = date($this->getOption('dateFormat'), $unixDate);
         $info = [
-            'ctx' => $filePathArray['ctx'],
+            'ctx' => $fdPath->get('ctx'),
             'fullPath' => $fileRealPath,
             'path' => dirname($fileRealPath),
             'filename' => $baseName,
@@ -1148,9 +1137,10 @@ class FileDownloadR
             'link' => $link['url'], // fallback
             'url' => $link['url'],
             'deleteurl' => $linkdelete['url'],
-            'hash' => $filePathArray['hash']
+            'hash' => $fdPath->get('hash'),
+            'extended' => $fdPath->get('extended')
         ];
-        return $this->getFileCount($info, $filePathArray['id']);
+        return $this->getFileCount($info, $fdPath->get('id'));
     }
 
     /**
@@ -1185,14 +1175,14 @@ class FileDownloadR
         }
 
         $sort = [];
-        $dirs = '';
+        $dirs = [];
         if (!empty($this->getOption('browseDirectories')) && !empty($sortType['dir'])) {
             $sort['dir'] = $sortType['dir'];
             // template
             $row = 1;
             foreach ($sort['dir'] as $v) {
                 $v['class'] = $this->cssDir($row);
-                $dirs .= $this->tplDir($v);
+                $dirs[] = $this->tplDir($v);
                 $row++;
             }
         }
@@ -1201,35 +1191,39 @@ class FileDownloadR
             $this->getOption('prefix') . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
             $this->getOption('prefix') . 'path' => $this->breadcrumbs(),
         ]);
-        $this->_output['dirRows'] = '';
+        $this->_output['dirRows'] = [];
         if (!empty($this->getOption('tplWrapperDir')) && !empty($dirs)) {
-            $phs[$this->getOption('prefix') . 'dirRows'] = $dirs;
-            $this->_output['dirRows'] .= $this->parse->getChunk($this->getOption('tplWrapperDir'), $phs);
+            $phs[$this->getOption('prefix') . 'dirRows'] = implode($this->getOption('dirSeparator'), $dirs);
+            $this->_output['dirRows'][] = $this->parse->getChunk($this->getOption('tplWrapperDir'), $phs);
         } else {
-            $this->_output['dirRows'] .= $dirs;
+            $this->_output['dirRows'][] = implode($this->getOption('dirSeparator'), $dirs);
         }
 
-        $files = '';
+        $files = [];
         if (!empty($sortType['file'])) {
             $sort['file'] = $sortType['file'];
             // template
             $row = 1;
             foreach ($sort['file'] as $v) {
                 $v['class'] = $this->cssFile($row, $v['ext']);
-                $files .= $this->tplFile($v);
+                $files[] = $this->tplFile($v);
                 $row++;
             }
+            if (count($this->getOption('getDir')) == 1) {
+                $this->modx->setPlaceholder($this->getOption('totalVar'), count($files));
+                $files = array_slice($files, $this->getOption('offset'), $this->getOption('limit'));
+            }
         }
-        $this->_output['fileRows'] = '';
+        $this->_output['fileRows'] = [];
         if (!empty($this->getOption('tplWrapperFile')) && !empty($files)) {
-            $phs[$this->getOption('prefix') . 'fileRows'] = $files;
-            $this->_output['fileRows'] .= $this->parse->getChunk($this->getOption('tplWrapperFile'), $phs);
+            $phs[$this->getOption('prefix') . 'fileRows'] = implode($this->getOption('fileSeparator'), $files);
+            $this->_output['fileRows'][] = $this->parse->getChunk($this->getOption('tplWrapperFile'), $phs);
         } else {
-            $this->_output['fileRows'] .= $files;
+            $this->_output['fileRows'][] = implode($this->getOption('fileSeparator'), $files);
         }
 
-        $this->_output['rows'] .= $this->_output['dirRows'];
-        $this->_output['rows'] .= $this->_output['fileRows'];
+        $this->_output['rows'][] = implode($this->getOption('dirsSeparator'), $this->_output['dirRows']);
+        $this->_output['rows'][] = implode($this->getOption('filesSeparator'), $this->_output['fileRows']);
 
         return $sort;
     }
@@ -1611,26 +1605,26 @@ class FileDownloadR
             if (empty($absPath)) {
                 return false;
             }
-            $fdlPath = $this->modx->getObject('fdPaths', [
+            $fdPath = $this->modx->getObject('fdPaths', [
                 'ctx' => $this->modx->context->key,
                 'media_source_id' => $this->getOption('mediaSourceId'),
                 'filename' => $absPath,
             ]);
-            if (!$fdlPath) {
-                $filePathArray = $this->getFilePathArray([
+            if (!$fdPath) {
+                $fdPath = $this->getFdPath([
                     'ctx' => $this->modx->context->key,
                     'filename' => $absPath,
                 ], false);
-                if (!$filePathArray) {
+                if (!$fdPath) {
                     continue;
                 }
-                $fdlPath = $this->modx->getObject('fdPaths', [
+                $fdPath = $this->modx->getObject('fdPaths', [
                     'ctx' => $this->modx->context->key,
                     'media_source_id' => $this->getOption('mediaSourceId'),
-                    'filename' => $filePathArray['filename']
+                    'filename' => $fdPath->get('filename')
                 ]);
             }
-            $hash = $fdlPath->get('hash');
+            $hash = $fdPath->get('hash');
             $link = $this->createLink($hash, $this->modx->context->key);
 
             if ($trailingPath !== $origPath . $this->getOption('directorySeparator')) {
@@ -1704,8 +1698,13 @@ class FileDownloadR
             return '';
         }
         $phs = $this->options;
-        foreach ($fileInfo as $k => $v) {
-            $phs[$this->getOption('prefix') . $k] = $v;
+        foreach ($fileInfo as $key => $value) {
+            if ($key === 'extended' && is_array($value)) {
+                foreach ($value as $k => $v) {
+                    $value[$k] = htmlspecialchars($v);
+                }
+            }
+            $phs[$this->getOption('prefix') . $key] = $value;
         }
         return $this->parse->getChunk($this->getOption('tplFile'), $phs);
     }
@@ -1799,13 +1798,13 @@ class FileDownloadR
      */
     public function setDirectory($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('ctx') !== $this->modx->context->key
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('ctx') !== $this->modx->context->key
         ) {
             return false;
         }
-        $this->options['getDir'] = [rtrim($fdlPath->get('filename'), $this->getOption('directorySeparator'))];
+        $this->options['getDir'] = [rtrim($fdPath->get('filename'), $this->getOption('directorySeparator'))];
         $this->options['getFile'] = [];
 
         return true;
@@ -1822,18 +1821,18 @@ class FileDownloadR
         if (empty($hash)) {
             return false;
         }
-        /** @var fdPaths $fdlPath */
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        /** @var fdPaths $fdPath */
+        $fdPath = $this->modx->getObject('fdPaths', [
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             return false;
         }
-        if ($this->modx->context->key !== $fdlPath->get('ctx')) {
+        if ($this->modx->context->key !== $fdPath->get('ctx')) {
             return false;
         }
-        return $fdlPath;
+        return $fdPath;
     }
 
     /**
@@ -1844,22 +1843,29 @@ class FileDownloadR
      */
     public function downloadFile($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
         ) {
             return false;
         }
-        $filePath = $fdlPath->get('filename');
+        $filePath = $fdPath->get('filename');
 
         $eventProperties = [
             'hash' => $hash,
-            'ctx' => $fdlPath->get('ctx'),
-            'mediaSourceId' => $fdlPath->get('media_source_id'),
+            'fdPath' => $fdPath,
+            'ctx' => $fdPath->get('ctx'),
+            'mediaSourceId' => $fdPath->get('media_source_id'),
             'filePath' => $filePath,
+            'extended' => $fdPath->get('extended') ?? [],
         ];
-        $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
-        $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
+        $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
+        try {
+            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDownload', $eventProperties);
+        } catch (Exception $e) {
+            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDownload: ' . $e->getMessage());
+            return false;
+        }
         if (is_array($result)) {
             if (in_array(false, $result, true)) {
                 return false;
@@ -1880,38 +1886,34 @@ class FileDownloadR
                 if (file_exists($realFilePath)) {
                     $fileExists = true;
                 }
-            } elseif ($this->mediaSource->getObjectContents($filePath)) {
-                try {
-                    $objectContent = $this->mediaSource->getObjectContents($filePath);
-                    if (!empty($content)) {
-                        $temp = tempnam(sys_get_temp_dir(), 'fdl_' . time() . '_' . pathinfo($filename, PATHINFO_FILENAME) . '_');
-                        $handle = fopen($temp, "r+b");
-                        fwrite($handle, $objectContent['content']);
-                        fseek($handle, 0);
-                        fclose($handle);
-                        $realFilePath = $temp;
-                        $fileExists = true;
-                    } else {
-                        $msg = $this->modx->lexicon('filedownloadr.remote_err_file_empty');
+            } else {
+                $objectContent = $this->mediaSource->getObjectContents($filePath);
+                // $objectContent should be an array for remote media sources
+                if (is_array($objectContent)) {
+                    try {
+                        if (!empty($objectContent)) {
+                            $temp = tempnam(sys_get_temp_dir(), 'fdl_' . time() . '_' . pathinfo($filename, PATHINFO_FILENAME) . '_');
+                            $handle = fopen($temp, "r+b");
+                            fwrite($handle, $objectContent['content']);
+                            fseek($handle, 0);
+                            fclose($handle);
+                            $realFilePath = $temp;
+                            $fileExists = true;
+                        } else {
+                            $msg = $this->modx->lexicon('filedownloadr.remote_err_file_empty');
+                            $this->setError($msg);
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                        }
+                    } catch (Exception $e) {
+                        $msg = $this->modx->lexicon('filedownloadr.remote_err_file_not_available');
                         $this->setError($msg);
                         $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                     }
-                } catch (Exception $e) {
-                    $msg = $this->modx->lexicon('filedownloadr.remote_err_file_not_available');
-                    $this->setError($msg);
-                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                 }
             }
         }
         if ($fileExists) {
-            // required for IE
-            if (ini_get('zlib.output_compression')) {
-                ini_set('zlib.output_compression', 'Off');
-            }
-
             @set_time_limit(300);
-            ob_end_clean(); // added to fix ZIP file corruption
-            ob_start(); // added to fix ZIP file corruption
 
             header('Pragma: public'); // required
             header('Expires: 0'); // no cache
@@ -1919,20 +1921,15 @@ class FileDownloadR
             header('Cache-Control: private', false);
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($realFilePath)) . ' GMT');
             header('Content-Description: File Transfer');
-            header('Content-Type:'); // added to fix ZIP file corruption
-            header('Content-Type: "application/force-download"');
+            header('Content-Type: "' . mime_content_type($realFilePath) . '"');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
-            header('Content-Transfer-Encoding: binary');
             header('Content-Length: ' . filesize($realFilePath)); // provide file size
             header('Connection: close');
-            sleep(1);
 
             // Close the session to allow for header() to be sent
             session_write_close();
-            ob_flush();
-            flush();
 
-            $chunksize = 1 * (1024 * 1024); // how many bytes per chunk
+            $chunksize = 1024 * 1024; // how many bytes per chunk
             $handle = @fopen($realFilePath, 'rb');
             if ($handle === false) {
                 return false;
@@ -1943,7 +1940,6 @@ class FileDownloadR
                     die();
                 }
                 echo $buffer;
-                ob_flush();
                 flush();
             }
             fclose($handle);
@@ -1956,12 +1952,19 @@ class FileDownloadR
 
             $eventProperties = [
                 'hash' => $hash,
-                'ctx' => $fdlPath->get('ctx'),
-                'mediaSourceId' => $fdlPath->get('media_source_id'),
+                'fdPath' => $fdPath,
+                'ctx' => $fdPath->get('ctx'),
+                'mediaSourceId' => $fdPath->get('media_source_id'),
                 'filePath' => $filePath,
+                'extended' => $fdPath->get('extended') ?? [],
             ];
-            $eventProperties = $this->getFileCount($eventProperties, $fdlPath->get('id'));
-            $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
+            $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
+            try {
+                $this->modx->invokeEvent('OnFileDownloadAfterFileDownload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDownload: ' . $e->getMessage());
+                exit();
+            }
 
             exit();
         }
@@ -1979,16 +1982,16 @@ class FileDownloadR
         if (!$this->getOption('countDownloads')) {
             return;
         }
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        $fdPath = $this->modx->getObject('fdPaths', [
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
+        if (!$fdPath) {
             return;
         }
         // save the new count
         $fdDownload = $this->modx->newObject('fdDownloads');
-        $fdDownload->set('path_id', $fdlPath->getPrimaryKey());
+        $fdDownload->set('path_id', $fdPath->getPrimaryKey());
         $fdDownload->set('referer', $this->getReferrer());
         $fdDownload->set('user', $this->modx->user->get('id'));
         $fdDownload->set('timestamp', time());
@@ -2062,7 +2065,7 @@ class FileDownloadR
     /**
      * Upload action.
      *
-     * @return false file is pulled to the browser
+     * @return bool State of the upload
      */
     public function uploadFile()
     {
@@ -2071,7 +2074,7 @@ class FileDownloadR
         $allowedTypes = $this->getOption('uploadFileTypes');
 
         if ($this->isAllowed('uploadGroups')) {
-            // Es wurde eine Datei hochgeladen und dabei sind keine Fehler aufgetreten
+            // A file has been uploaded and no errors have occurred
             if (!empty($_FILES) && is_array($_FILES['fdupload']) && $_FILES['fdupload']['error'] == UPLOAD_ERR_OK) {
                 $type = mime_content_type($_FILES['fdupload']['tmp_name']);
                 if (in_array($type, $allowedTypes)) {
@@ -2091,16 +2094,28 @@ class FileDownloadR
                 return false;
             }
 
+            $extendedFields = $this->getPostExtendedFields();
             $eventProperties = [
+                'mediaSourceId' => $this->mediaSource->get('id'),
                 'filePath' => $filePath,
-                'fileName' => $fileName
+                'fileName' => $fileName,
+                'extended' => $extendedFields,
+                'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
-            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileUpload', $eventProperties);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileUpload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileUpload: ' . $e->getMessage());
+                return false;
+            }
             if (is_array($result)) {
                 if (in_array(false, $result, true)) {
                     return false;
                 }
             }
+            $filePath = $result['filePath'] ?? $filePath;
+            $fileName = $result['fileName'] ?? $fileName;
+            $extendedFields = $result['extended'] ?? $extendedFields;
 
             if (empty($this->mediaSource)) {
                 if (file_exists($filePath . $this->getOption('directorySeparator') . $fileName)) {
@@ -2131,28 +2146,42 @@ class FileDownloadR
             }
 
             // Get the upload directory database entry
-            $filePathArray = $this->getFilePathArray([
+            $fdUploadPath = $this->getFdPath([
                 'ctx' => $this->modx->context->key,
                 'filename' => $filePath . $this->getOption('directorySeparator'),
             ]);
-            if (!$filePathArray) {
+            if (!$fdUploadPath) {
                 return false;
             }
 
+            // Create the uploaded file database entry
+            $fdPath = $this->getFdPath([
+                'ctx' => $this->modx->context->key,
+                'filename' => $filePath . $this->getOption('directorySeparator') . $fileName,
+                'extended' => $extendedFields,
+            ]);
+
             $eventProperties = [
+                'hash' => $fdPath->get('hash'),
+                'fdPath' => $fdPath,
                 'filePath' => $filePath,
                 'fileName' => $fileName,
-                'hash' => $filePathArray['hash'],
+                'extended' => $extendedFields,
                 'resourceId' => ($this->modx->resource) ? $this->modx->resource->get('id') : 0,
             ];
-            $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
+            try {
+                $result = $this->modx->invokeEvent('OnFileDownloadAfterFileUpload', $eventProperties);
+            } catch (Exception $e) {
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileUpload: ' . $e->getMessage());
+                return false;
+            }
             if (is_array($result)) {
                 if (in_array(false, $result, true)) {
                     return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -2163,20 +2192,60 @@ class FileDownloadR
      */
     public function deleteFile($hash)
     {
-        $fdlPath = $this->getPathByHash($hash);
-        if (!$fdlPath ||
-            $fdlPath->get('ctx') !== $this->modx->context->key ||
-            $fdlPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
+        $fdPath = $this->getPathByHash($hash);
+        if (!$fdPath ||
+            $fdPath->get('ctx') !== $this->modx->context->key ||
+            $fdPath->get('media_source_id') !== intval($this->getOption('mediaSourceId'))
         ) {
             return false;
         }
-        $filePath = $fdlPath->get('filename');
+        $filePath = $fdPath->get('filename');
         if ($this->isAllowed('deleteGroups')) {
             if (empty($this->mediaSource)) {
                 if (file_exists($filePath)) {
                     try {
+                        $eventProperties = [
+                            'hash' => $fdPath->get('hash'),
+                            'fdPath' => $fdPath,
+                            'ctx' => $fdPath->get('ctx'),
+                            'mediaSourceId' => $fdPath->get('media_source_id'),
+                            'filePath' => $filePath,
+                            'extended' => $fdPath->get('extended') ?? [],
+                        ];
+                        $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
+                        try {
+                            $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                        } catch (Exception $e) {
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDelete: ' . $e->getMessage());
+                            return false;
+                        }
+                        if (is_array($result)) {
+                            if (in_array(false, $result, true)) {
+                                return false;
+                            }
+                        }
                         unlink($filePath);
-                        $fdlPath->remove();
+                        if ($fdPath->remove()) {
+                            try {
+                                $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
+                            } catch (Exception $e) {
+                                $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDelete: ' . $e->getMessage());
+                                return false;
+                            }
+                            if (is_array($result)) {
+                                if (in_array(false, $result, true)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
+                                'file' => pathinfo($filePath, PATHINFO_BASENAME)
+                            ]);
+                            $this->setError($msg);
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                            return false;
+                        }
                     } catch (Exception $e) {
                         $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
                             'file' => pathinfo($filePath, PATHINFO_BASENAME)
@@ -2185,7 +2254,6 @@ class FileDownloadR
                         $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
                         return false;
                     }
-                    return true;
                 } else {
                     $msg = $this->modx->lexicon('filedownloadr.file_err_not_exist', [
                         'file' => pathinfo($filePath, PATHINFO_BASENAME)
@@ -2195,9 +2263,47 @@ class FileDownloadR
                     return false;
                 }
             } else {
+                $eventProperties = [
+                    'hash' => $fdPath->get('hash'),
+                    'fdPath' => $fdPath,
+                    'ctx' => $fdPath->get('ctx'),
+                    'mediaSourceId' => $fdPath->get('media_source_id'),
+                    'filePath' => $filePath,
+                    'extended' => $fdPath->get('extended') ?? [],
+                ];
+                $eventProperties = $this->getFileCount($eventProperties, $fdPath->get('id'));
+                try {
+                    $result = $this->modx->invokeEvent('OnFileDownloadBeforeFileDelete', $eventProperties);
+                } catch (Exception $e) {
+                    $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadBeforeFileDelete: ' . $e->getMessage());
+                    return false;
+                }
+                if (is_array($result)) {
+                    if (in_array(false, $result, true)) {
+                        return false;
+                    }
+                }
                 if ($this->mediaSource->removeObject($filePath)) {
-                    $fdlPath->remove();
-                    return true;
+                    if ($fdPath->remove()) {
+                        try {
+                            $result = $this->modx->invokeEvent('OnFileDownloadAfterFileDelete', $eventProperties);
+                        } catch (Exception $e) {
+                            $this->modx->log(xPDO::LOG_LEVEL_ERROR, 'Exception in OnFileDownloadAfterFileDelete: ' . $e->getMessage());
+                            return false;
+                        }
+                        if (is_array($result)) {
+                            if (in_array(false, $result, true)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else {
+                        $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
+                            'file' => pathinfo($filePath, PATHINFO_BASENAME)
+                        ]);
+                        $this->setError($msg);
+                        $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                    }
                 } else {
                     $msg = $this->modx->lexicon('filedownloadr.file_err_delete', [
                         'file' => pathinfo($filePath, PATHINFO_BASENAME)
@@ -2215,29 +2321,37 @@ class FileDownloadR
     /**
      * List the contents
      *
+     * @param bool $upload
      * @return string
      */
-    public function listContents()
+    public function listContents($upload = false)
     {
         $breadcrumbs = $this->breadcrumbs();
         if (!empty($this->getOption('tplWrapper'))) {
+            $prefix = $this->getOption('prefix');
             $args = $this->modx->request->getParameters(['fdldir']);
             if ($this->getOption('fdlid')) {
                 $args['fdlid'] = $this->getOption('fdlid');
             }
-            $output = $this->parse->getChunk($this->getOption('tplWrapper'), array_merge($this->options, [
-                $this->getOption('prefix') . 'error' => $this->getError(),
-                $this->getOption('prefix') . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
-                $this->getOption('prefix') . 'path' => $breadcrumbs,
-                $this->getOption('prefix') . 'uploadUrl' => $this->modx->makeUrl($this->modx->resource->get('id'), $this->modx->context->key, $args),
-                $this->getOption('prefix') . 'uploadFileExtensions' => $this->getOption('uploadFileExtensions') ? '(*.' . implode(', *.', $this->getOption('uploadFileExtensions')) . ')' : '',
-                $this->getOption('prefix') . 'uploadFileTypes' => implode(',', $this->getOption('uploadFileTypes')),
-                $this->getOption('prefix') . 'rows' => !empty($this->_output['rows']) ? $this->_output['rows'] : '',
-                $this->getOption('prefix') . 'dirRows' => $this->_output['dirRows'],
-                $this->getOption('prefix') . 'fileRows' => $this->_output['fileRows'],
-            ]));
+            $options = array_merge($this->options, [
+                $prefix . 'error' => $this->getError(),
+                $prefix . 'classPath' => (!empty($this->getOption('cssPath'))) ? ' class="' . $this->getOption('cssPath') . '"' : '',
+                $prefix . 'path' => $breadcrumbs,
+                $prefix . 'uploadUrl' => $this->modx->makeUrl($this->modx->resource->get('id'), $this->modx->context->key, $args),
+                $prefix . 'uploadFileExtensions' => $this->getOption('uploadFileExtensions') ? '(*.' . implode(', *.', $this->getOption('uploadFileExtensions')) . ')' : '',
+                $prefix . 'uploadFileTypes' => implode(',', $this->getOption('uploadFileTypes')),
+                $prefix . 'rows' => !empty($this->_output['rows']) ? implode('', $this->_output['rows']) : '',
+                $prefix . 'dirRows' => $this->_output['dirRows'],
+                $prefix . 'fileRows' => $this->_output['fileRows'],
+                $prefix . 'extendedFields' => $this->getOption('extendedFields') ? '1' : '',
+            ]);
+            if (!empty($_POST) && !$upload) {
+                $options = array_merge($options, $this->getPostExtendedFields('fdextended_'));
+            }
+
+            $output = $this->parse->getChunk($this->getOption('tplWrapper'), $options);
         } else {
-            $output = !empty($this->_output['rows']) ? $this->_output['rows'] : '';
+            $output = !empty($this->_output['rows']) ? implode('', $this->_output['rows']) : '';
         }
 
         return $output;
@@ -2262,14 +2376,120 @@ class FileDownloadR
      */
     public function checkHash($ctx, $hash)
     {
-        $fdlPath = $this->modx->getObject('fdPaths', [
+        $fdPath = $this->modx->getObject('fdPaths', [
             'ctx' => $ctx,
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        if (!$fdlPath) {
-            return false;
+        return (!$fdPath) ? false : true;
+    }
+
+    /**
+     * @param string $prefix
+     * @return array
+     */
+    private function getPostExtendedFields($prefix = '')
+    {
+        $result = [];
+        foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
+            $name = $extendedFileField['name'] ?? '';
+            if ($name) {
+                $parameter = $this->modx->request->getParameters('fdextended_' . $name, 'POST');
+                if (!empty($parameter)) {
+                    switch ($extendedFileField['type'] ?? 'string') {
+                        case 'bool':
+                        case 'boolean':
+                            $parameter = (bool)$parameter;
+                            break;
+                        case 'int':
+                        case 'integer':
+                            $parameter = (int)$parameter;
+                            break;
+                        case 'string':
+                        default:
+                            $parameter = htmlspecialchars($this->modx->stripTags($parameter));
+
+                    }
+                    $result[$prefix . $name] = $parameter;
+                }
+            }
         }
-        return true;
+        return $result;
+    }
+
+    /**
+     * Check the called file contents with the registered database.
+     *
+     * If it's not listed, auto save
+     * @param array $file
+     * @param bool $autoCreate
+     * @return \fdPaths|null
+     */
+    private function getFdPath($file, $autoCreate = true)
+    {
+        if (empty($file)) {
+            return null;
+        }
+
+        if (empty($this->mediaSource)) {
+            $realPath = realpath($file['filename']);
+            if (empty($realPath)) {
+                return null;
+            }
+        } else {
+            $basePath = $this->getBasePath($file['filename']);
+            if (!empty($basePath)) {
+                $file['filename'] = str_replace($basePath, '', $file['filename']);
+            }
+        }
+
+        /** @var fdPaths $fdPath */
+        $fdPath = $this->modx->getObject('fdPaths', [
+            'ctx' => $file['ctx'],
+            'media_source_id' => $this->getOption('mediaSourceId'),
+            'filename' => $file['filename']
+        ]);
+        if (!$fdPath) {
+            if (!$autoCreate) {
+                return null;
+            }
+            /** @var fdPaths $fdPath */
+            $fdPath = $this->modx->newObject('fdPaths');
+            $fdPath->fromArray([
+                'ctx' => $file['ctx'],
+                'media_source_id' => $this->getOption('mediaSourceId'),
+                'filename' => $file['filename'],
+                'count' => 0,
+                'hash' => $this->setHashedParam($file['ctx'], $file['filename'])
+            ]);
+            $fdPath = $this->prepareExtendedFields($file['extended'] ?? [], $fdPath);
+            if ($fdPath->save() === false) {
+                $msg = $this->modx->lexicon('filedownloadr.counter_err_save');
+                $this->setError($msg);
+                $this->modx->log(xPDO::LOG_LEVEL_ERROR, $msg, '', 'FileDownloadR', __FILE__, __LINE__);
+                return null;
+            }
+        }
+        return $fdPath;
+    }
+
+    /**
+     * Prepare the extended fields
+     *
+     * @param array $extendedFields
+     * @param fdPaths $fdPath
+     * @return fdPaths
+     */
+    private function prepareExtendedFields($extendedFields, $fdPath)
+    {
+        foreach ($this->getOption('extended_file_fields') as $extendedFileField) {
+            $name = $extendedFileField['name'];
+            if ($name) {
+                if (isset($extendedFields[$name])) {
+                    $fdPath->setExtendedField($name, $extendedFields[$name]);
+                }
+            }
+        }
+        return $fdPath;
     }
 }

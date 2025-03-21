@@ -1,15 +1,15 @@
 {
   "name": "FileDownload R",
   "lowCaseName": "filedownloadr",
-  "description": "Display a list of downloadable files without revealing the file url.",
+  "description": "Manage downloadable files without revealing the file url",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.1.4",
+  "version": "3.2.0",
   "package": {
     "elements": {
       "snippets": [
         {
           "name": "FileDownload",
-          "description": "Snippet to list downloadable files.",
+          "description": "Snippet to list downloadable files",
           "file": "filedownload.snippet.php",
           "properties": [
             {
@@ -112,6 +112,14 @@
               "value": "0"
             },
             {
+              "name": "dirSeparator",
+              "value": ""
+            },
+            {
+              "name": "dirsSeparator",
+              "value": ""
+            },
+            {
               "name": "downloadByOther",
               "type": "combo-boolean",
               "value": "0"
@@ -130,6 +138,14 @@
             },
             {
               "name": "fileJs",
+              "value": ""
+            },
+            {
+              "name": "fileSeparator",
+              "value": ""
+            },
+            {
+              "name": "filesSeparator",
               "value": ""
             },
             {
@@ -154,12 +170,20 @@
               "value": "fdImages"
             },
             {
+              "name": "limit",
+              "value": "0"
+            },
+            {
               "name": "mediaSourceId",
               "value": "0"
             },
             {
               "name": "noDownload",
               "type": "combo-boolean",
+              "value": "0"
+            },
+            {
+              "name": "offset",
               "value": "0"
             },
             {
@@ -253,6 +277,10 @@
               "value": "0"
             },
             {
+              "name": "totalVar",
+              "value": "fd.total"
+            },
+            {
               "name": "tplBreadcrumb",
               "value": "fdBreadcrumbTpl"
             },
@@ -313,7 +341,7 @@
         },
         {
           "name": "FileDownloadLink",
-          "description": "Snippet to list downloadable files.",
+          "description": "Snippet to list a downloadable file link",
           "file": "filedownloadlink.snippet.php",
           "properties": [
             {
@@ -410,7 +438,7 @@
         },
         {
           "name": "FileDownloadCount",
-          "description": "Snippet to count downloadable files in a directory.",
+          "description": "Snippet to count downloadable files in a directory",
           "file": "filedownloadcount.snippet.php",
           "properties": [
             {
@@ -575,6 +603,11 @@
       {
         "key": "email_props",
         "area": "email",
+        "value": ""
+      },
+      {
+        "key": "extended_file_fields",
+        "area": "system",
         "value": ""
       }
     ]

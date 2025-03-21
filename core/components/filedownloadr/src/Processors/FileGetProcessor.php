@@ -11,7 +11,7 @@ namespace TreehillStudio\FileDownloadR\Processors;
 /**
  * Class Processor
  */
-abstract class FileGetProcessor extends Processor
+class FileGetProcessor extends Processor
 {
     public function process()
     {

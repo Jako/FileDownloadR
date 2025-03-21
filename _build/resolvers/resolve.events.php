@@ -82,6 +82,8 @@ $events = [
     'OnFileDownloadAfterFileDownload',
     'OnFileDownloadBeforeFileUpload',
     'OnFileDownloadAfterFileUpload',
+    'OnFileDownloadBeforeFileDelete',
+    'OnFileDownloadAfterFileDelete',
 ];
 
 /** @var xPDO $modx */

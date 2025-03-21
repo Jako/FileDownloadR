@@ -7,6 +7,10 @@ $xpdo_meta_map['fdCount']= array (
   'version' => '1.1',
   'table' => 'fd_count',
   'extends' => 'xPDOSimpleObject',
+  'tableMeta' => 
+  array (
+    'engine' => 'InnoDB',
+  ),
   'fields' => 
   array (
     'ctx' => 'web',

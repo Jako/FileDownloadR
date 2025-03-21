@@ -13,33 +13,46 @@
   padding: 10px;
   margin-bottom: 10px;
 
-  .fd-file-label {
+  .fd-label, .fd-file-label {
     display: block;
     margin-bottom: 10px;
   }
 
-  .fd-file-container {
+  .fd-file-container, .fd-extended-container {
+    margin-bottom: 10px;
+  }
+
+  input[type="file"], input[type="text"] {
+    display: block;
+    width: 100%;
     border: 1px solid #ccc;
-    margin-bottom: 10px;
   }
 
-  input[type=file] {
-    display: block;
+  input[type="file"] {
     &::file-selector-button {
       background-color: #fff;
       color: #000;
       border: 0;
       border-right: 1px solid #ccc;
       padding: 5px 10px;
-      margin-right: 20px;
+      margin-right: 10px;
       transition: .5s;
     }
+
     &::file-selector-button:hover {
-      background-color: #eee;
-      border: 0;
-      border-right: 1px solid #ccc;
+      background-color: color.adjust(#fff, $lightness: -15%);
     }
   }
+
+  input[type="text"] {
+    padding: 5px 10px;
+
+    &:focus-visible {
+      outline: none;
+      border: 1px solid #000;
+    }
+  }
+
   .fd-file-button {
     display: block;
     background-color: firebrick;
@@ -47,54 +60,73 @@
     padding: 5px 10px;
     border: none;
     transition: .5s;
+
     &:hover {
-      background-color: color.adjust(firebrick, $lightness: -10%);
+      background-color: color.adjust(firebrick, $lightness: -15%);
     }
   }
-
-
 }
 
 table.fd-table {
   width: 100%;
+
   .fd-header {
     background-color: firebrick;
     color: white;
   }
+
   .fd-firstDir {
   }
+
   .fd-lastDir {
   }
+
   .fd-firstFile {
   }
+
   .fd-lastFile {
   }
+
   .fd-dir {
   }
+
   .fd-file {
   }
+
   .fd-path {
   }
+
   .fd-altRow {
     background-color: #efefef;
   }
+
   .fd-group-dir {
     background-color: #ddd;
   }
+
   tr {
     border-bottom: 1px solid #ccc;
+
     td {
       padding: 5px;
     }
   }
+
   .fd-xlsx {
     background-color: #e3d1e6;
   }
+
   &.no-border, &.no-border > tr, &.no-border > tr > td {
     border: none;
   }
+
   .fd-icon {
     display: inline-block;
     width: 16px;
+  }
+
+  .fd-extended {
+    display: block;
+    margin-left: 20px;
   }
 }

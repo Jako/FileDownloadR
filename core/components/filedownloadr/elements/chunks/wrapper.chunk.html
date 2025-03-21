@@ -2,10 +2,16 @@
 [[+uploadFile:notempty=`
 <form class="fd-upload-form" action="[[+fd.uploadUrl]]" method="post" enctype="multipart/form-data">
     <input type="hidden" name="fdmaxfilesize" value="[[+uploadMaxSize]]">
-    <label class="fd-file-label">[[%filedownloadr.upload_text? &extensions=`[[+fd.uploadFileExtensions]]` &namespace=`filedownloadr`]]</label>
+    <label class="fd-label">[[%filedownloadr.upload_text? &extensions=`[[+fd.uploadFileExtensions]]` &namespace=`filedownloadr`]]</label>
     <div class="fd-file-container">
         <input name="fdupload" type="file" accept="[[+fd.uploadFileTypes]]">
     </div>
+    [[+fd.extendedFields:notempty=`
+    <label class="fd-label">Description</label>
+    <div class="fd-extended-container">
+        <input name="fdextended_description" type="text" value="[[+fdextended_description]]">
+    </div>
+    `]]
     <button class="fd-file-button">[[%filedownloadr.upload_button? &namespace=`filedownloadr`]]</button>
 </form>
 `]]

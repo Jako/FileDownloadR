@@ -10,6 +10,7 @@
         [[+countUserDownloads:notempty=`
         <span style="font-size:80%">([[+fd.count_user:eq=`1`:then=`[[%filedownloadr.file_count_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`:else=`[[%filedownloadr.file_counts_user? &count=`[[+fd.count_user]]` &namespace=`filedownloadr`]]`]])</span>
         `]]
+        [[+extendedFields:notempty=`<span class="fd-extended">[[+fd.extended.description]]</span>`:default=``]]
     </td>
     <td>[[+fd.sizeText]]</td>
     <td>[[+fd.date]]</td>
@@ -20,3 +21,4 @@
 <tr>
     <td colspan="4">[[+fd.description]]</td>
 </tr>`:default=``]]
+

@@ -1,5 +1,7 @@
 {
   "name": "treehillstudio/filedownloadr",
+  "description": "Manage downloadable files without revealing the file url",
+  "version": "3.2.0",
   "authors": [
     {
       "name": "Rico Goldsky",
@@ -21,6 +23,7 @@
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
+    "ext-fileinfo": "*",
     "ip2location/ipinfodb-php": "^1.0",
     "ralouphie/mimey": "^2.1"
   },

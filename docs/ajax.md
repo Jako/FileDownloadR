@@ -73,7 +73,6 @@ content.
 ### tplDownloadScript
 
 ```html
-
 <script>
     $(function () {
         var connector = 'assets/components/yourpackage/connector.php?';

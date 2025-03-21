@@ -1,38 +1,33 @@
 <?php
 /**
- * FileDownload Email Plugin
+ * FileDownloadR Email Plugin
  *
  * @package filedownloadr
  * @subpackage plugin
  *
  * @var modX $modx
+ * @var array $scriptProperties
  */
+
+$className = 'TreehillStudio\FileDownloadR\Plugins\EmailEvents\\' . $modx->event->name;
 
 $corePath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/');
 /** @var FileDownloadR $filedownloadr */
-$filedownloadr = $modx->getService('filedownloadr', 'FileDownloadR', $corePath . 'model/filedownloadr/', [
+$filedownloadr = $modx->getService('filedownloadr', FileDownloadR::class, $corePath . 'model/filedownloadr/', [
     'core_path' => $corePath
 ]);
 
-switch ($modx->event->name) {
-    case 'OnFileDownloadAfterFileDownload':
-        $_POST = [
-            'ctx' => $modx->event->params['ctx'],
-            'filePath' => $modx->event->params['filePath'],
-        ];
-        $_REQUEST = $_POST;
-        $emailProps = $filedownloadr->getOption('email_props');
-        $formitProps = array_merge(['hooks' => 'email'], $emailProps ?? []);
-        $runFormit = $modx->runSnippet('FormIt', $formitProps);
-        if ($runFormit === false) {
-            $errMsg = 'Unabled to send email.';
-            $modx->setPlaceholder($filedownloadr->getOption('prefix') . 'error_message', $errMsg);
-            $modx->log(xPDO::LOG_LEVEL_ERROR, __LINE__ . ': ' . $errMsg, '', 'FileDownloadPlugin Email');
-            return false;
+if ($filedownloadr) {
+    if (class_exists($className)) {
+        $handler = new $className($modx, $scriptProperties);
+        if (get_class($handler) == $className) {
+            $handler->run();
+        } else {
+            $modx->log(xPDO::LOG_LEVEL_ERROR, $className . ' could not be initialized!', '', 'FileDownloadR Plugin');
         }
-        break;
-    default:
-        break;
+    } else {
+        $modx->log(xPDO::LOG_LEVEL_ERROR, $className . ' was not found!', '', 'FileDownloadR Plugin');
+    }
 }
 
-return true;
+return;

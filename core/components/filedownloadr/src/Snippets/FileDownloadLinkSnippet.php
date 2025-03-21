@@ -82,7 +82,7 @@ class FileDownloadLinkSnippet extends Snippet
                 $file = $sanitizedGets['fdlfile'];
                 if ($this->filedownloadr->checkHash($this->modx->context->key, $file)) {
                     $this->filedownloadr->downloadFile($file);
-                    // Simply terminate, because this is a downloading state
+                    // Simply terminate, because this is a downloading status
                     @session_write_close();
                     exit();
                 }
