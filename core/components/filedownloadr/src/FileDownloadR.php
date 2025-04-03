@@ -1364,7 +1364,7 @@ class FileDownloadR
                 $fileUrl = str_ireplace(MODX_BASE_PATH, MODX_SITE_URL, $filePath);
                 $fileUrl = str_replace($this->getOption('directorySeparator'), '/', $fileUrl);
                 $parseUrl = parse_url($fileUrl);
-                $url = ltrim($parseUrl['path'], '/' . MODX_HTTP_HOST);
+                $url = ltrim($parseUrl['path'], '/');
                 $link['url'] = MODX_URL_SCHEME . MODX_HTTP_HOST . '/' . $url;
             } else {
                 $link['url'] = $this->mediaSource->getObjectUrl($filePath);
