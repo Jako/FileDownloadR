@@ -394,7 +394,7 @@ class FileDownloadR
         // deal with multiple snippets which have &browseDirectories
         $xRef = @explode('?', $ref);
         $queries = [];
-        parse_str($xRef[1], $queries);
+        parse_str($xRef[1] ?? '', $queries);
         if (!empty($queries['id'])) {
             // non FURL
             $baseRef = $xRef[0] . '?id=' . $queries['id'];
