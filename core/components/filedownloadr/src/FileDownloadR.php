@@ -867,7 +867,7 @@ class FileDownloadR
         if (empty($contents)) {
             return $contents;
         }
-        if ($this->getOption('groupByDirectory')) {
+        if (empty($this->getOption('groupByDirectory'))) {
             $sort = $this->groupByType($contents);
         } else {
             $sortPath = [];
