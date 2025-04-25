@@ -1211,7 +1211,9 @@ class FileDownloadR
             }
             if (count($this->getOption('getDir')) == 1) {
                 $this->modx->setPlaceholder($this->getOption('totalVar'), count($files));
-                $files = array_slice($files, $this->getOption('offset'), $this->getOption('limit'));
+                if ($this->getOption('limit')) {
+                    $files = array_slice($files, $this->getOption('offset'), $this->getOption('limit'));
+                }
             }
         }
         $this->_output['fileRows'] = [];
