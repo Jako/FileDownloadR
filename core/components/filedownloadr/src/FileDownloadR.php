@@ -1356,18 +1356,22 @@ class FileDownloadR
         if ($this->getOption('noDownload')) {
             $link['url'] = $filePath;
         } else {
-            // to use this method, the file should always be placed on the web root
             $corePath = str_replace('/', $this->getOption('directorySeparator'), MODX_CORE_PATH);
-            if (stristr($filePath, $corePath)) {
+            // don't work in the MODX core path
+            if (strpos($filePath, $corePath) === 0) {
                 return [];
             }
-            // switching from absolute path to url is nuts
             if (empty($this->mediaSource)) {
-                $fileUrl = str_ireplace(MODX_BASE_PATH, MODX_SITE_URL, $filePath);
-                $fileUrl = str_replace($this->getOption('directorySeparator'), '/', $fileUrl);
-                $parseUrl = parse_url($fileUrl);
-                $url = ltrim($parseUrl['path'], '/');
-                $link['url'] = MODX_URL_SCHEME . MODX_HTTP_HOST . '/' . $url;
+                // the file path has to start with the MODX base path
+                $basePath = str_replace('/', $this->getOption('directorySeparator'), MODX_BASE_PATH);
+                if (strpos($filePath, $basePath) === 0) {
+                    $fileUrl = str_replace($this->getOption('directorySeparator'), '/', $filePath);
+                    $fileUrl = MODX_BASE_URL . substr($fileUrl, strlen($basePath));
+                    $fileUrl = ltrim($fileUrl, '/');
+                    $link['url'] = MODX_URL_SCHEME . MODX_HTTP_HOST . '/' . $fileUrl;
+                } else {
+                    return [];
+                }
             } else {
                 $link['url'] = $this->mediaSource->getObjectUrl($filePath);
             }
