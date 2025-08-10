@@ -125,13 +125,13 @@ This snippet will display a single download link for one file. It uses the follo
 
 FileDownloadR uses the following system settings in the namespace `filedownloadr`.
 
-| Key                                | Name                    | Description                                                                                                 | Default                                                  |
-|------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| filedownloadr.email_props          | Email Properties        | JSON-encoded array of email properties for the FileDownloadEmail plugin.                                    | -                                                        |
-| filedownloadr.exclude_scan         | Exclude Files           | Comma-separated list of filenames to be excluded during scanning.                                           | `.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store` |
-| filedownloadr.extended_file_fields | Extended File Fields    | ** Since 3.2.0 ** JSON-encoded array of extended file fields. The array can use the keys ‘name’ and ‘type’. | -                                                        |
-| filedownloadr.ipinfodb_api_key     | API Key of IPInfoDB.com | ** Since 3.0.0 ** Get the API Key from [https://ipinfodb.com/](https://ipinfodb.com/).                      | -                                                        |
-| filedownloadr.use_geolocation      | Use Geolocation by IP   | ** Since 3.0.0 ** Use geolocation by IPInfoDB.com.                                                          | No                                                       |
+| Key                                | Name                    | Description                                                                                             | Default                                                  |
+|------------------------------------|-------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| filedownloadr.email_props          | Email Properties        | JSON-encoded array of email properties for the FileDownloadEmail plugin.                                | -                                                        |
+| filedownloadr.exclude_scan         | Exclude Files           | Comma-separated list of filenames to be excluded during scanning.                                       | `.,..,Thumbs.db,.htaccess,.htpasswd,.ftpquota,.DS_Store` |
+| filedownloadr.extended_file_fields | Extended File Fields    | **Since 3.2.0** JSON-encoded array of extended file fields. The array can use the keys ‘name’ and ‘type’. | -                                                        |
+| filedownloadr.ipinfodb_api_key     | API Key of IPInfoDB.com | **Since 3.0.0** Get the API Key from [https://ipinfodb.com/](https://ipinfodb.com/).                    | -                                                        |
+| filedownloadr.use_geolocation      | Use Geolocation by IP   | **Since 3.0.0** Use geolocation by IPInfoDB.com.                                                        | No                                                       |
 
 ## Extended File Fields
 
