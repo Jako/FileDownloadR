@@ -79,6 +79,7 @@ $_lang['filedownloadr.filedownload.tplWrapperFile'] = 'Name eines Chunks, der al
 $_lang['filedownloadr.filedownload.uploadFile'] = 'Aktivieren Sie den Dateiupload.';
 $_lang['filedownloadr.filedownload.uploadFileTypes'] = 'Kommagetrennte Liste von Mime-Typen oder Erweiterungen, um den Upload zu beschränken.';
 $_lang['filedownloadr.filedownload.uploadGroups'] = 'Kommagetrennte Liste von Benutzergruppen-Namen. Zeige den Datei-Upload für Benutzer, die zu den angegebenen Gruppen gehören.';
+$_lang['filedownloadr.filedownload.uploadMaxCount'] = 'Maximal zulässige Anzahl der Dateien im Upload-Verzeichnis.';
 $_lang['filedownloadr.filedownload.uploadMaxSize'] = 'Maximale Upload-Größe in Bytes.';
 $_lang['filedownloadr.filedownload.userGroups'] = 'Kommagetrennte Liste von Benutzergruppen-Namen. Damit wird die Dateiliste für Benutzer angezeigt, die zu den angegebenen Gruppen gehören. Benutzer, die nicht zu dieser Gruppe gehören oder nicht angemeldet sind, erhalten eine in der Eigenschaft tplNotAllowed angegebene Meldung.';
 $_lang['filedownloadr.filedownloadcount.countDownloads'] = 'Aktivieren Sie die Download-Zählung in der Datenbank.';

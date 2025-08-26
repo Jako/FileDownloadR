@@ -79,6 +79,7 @@ $_lang['filedownloadr.filedownload.tplWrapperFile'] = 'Name of a chunk that is u
 $_lang['filedownloadr.filedownload.uploadFile'] = 'Enable the file upload.';
 $_lang['filedownloadr.filedownload.uploadFileTypes'] = 'Comma-separated list of mime types or extensions to restrict the upload.';
 $_lang['filedownloadr.filedownload.uploadGroups'] = 'Comma-separated list of user group names. Show the file upload for users that belong to the specified groups.';
+$_lang['filedownloadr.filedownload.uploadMaxCount'] = 'Maximum number of files allowed in the upload directory.';
 $_lang['filedownloadr.filedownload.uploadMaxSize'] = 'Maximum upload size in bytes.';
 $_lang['filedownloadr.filedownload.userGroups'] = 'Comma-separated list of user group names. This will show the file list for users that belong to the specified groups. Users that don’t not belong to this group or are not logged in will receive a message specified in the tplNotAllowed property.';
 $_lang['filedownloadr.filedownloadcount.countDownloads'] = 'Enable the download count in the database.';

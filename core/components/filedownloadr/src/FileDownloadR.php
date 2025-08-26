@@ -49,7 +49,7 @@ class FileDownloadR
      * The version
      * @var string $version
      */
-    public $version = '3.2.1';
+    public $version = '3.3.0';
 
     /**
      * The class options
@@ -2087,7 +2087,9 @@ class FileDownloadR
                         $mimes = new MimeTypes;
                         $fileName = pathinfo($_FILES['fdupload']['name'], PATHINFO_FILENAME) . '.' . $mimes->getExtension($type);
                     } else {
-                        $this->setError($this->modx->lexicon('filedownloadr.upload_err_filesize'));
+                        $this->setError($this->modx->lexicon('filedownloadr.upload_err_filesize', [
+                            'maxsize' => $this->humanFilesize($this->getOption('uploadMaxSize'), 0)
+                        ]));
                         return false;
                     }
                 } else {
@@ -2101,7 +2103,7 @@ class FileDownloadR
 
             $extendedFields = $this->getPostExtendedFields();
             $eventProperties = [
-                'mediaSourceId' => $this->mediaSource->get('id'),
+                'mediaSourceId' => ($this->mediaSource) ? $this->mediaSource->get('id') : 0,
                 'filePath' => $filePath,
                 'fileName' => $fileName,
                 'extended' => $extendedFields,
@@ -2123,12 +2125,20 @@ class FileDownloadR
             $extendedFields = $result['extended'] ?? $extendedFields;
 
             if (empty($this->mediaSource)) {
-                if (file_exists($filePath . $this->getOption('directorySeparator') . $fileName)) {
-                    $this->setError($this->modx->lexicon('filedownloadr.upload_err_exists'));
-                    return false;
-                }
-                if (!move_uploaded_file($_FILES['fdupload']['tmp_name'], $filePath . $this->getOption('directorySeparator') . $fileName)) {
-                    $this->setError($this->modx->lexicon('filedownloadr.upload_err_not_writable'));
+                $fileCount = count(glob($filePath . $this->getOption('directorySeparator') . "*"));
+                if (!$this->getOption('uploadMaxCount') || $fileCount < (int)$this->getOption('uploadMaxCount')) {
+                    if (file_exists($filePath . $this->getOption('directorySeparator') . $fileName)) {
+                        $this->setError($this->modx->lexicon('filedownloadr.upload_err_exists'));
+                        return false;
+                    }
+                    if (!move_uploaded_file($_FILES['fdupload']['tmp_name'], $filePath . $this->getOption('directorySeparator') . $fileName)) {
+                        $this->setError($this->modx->lexicon('filedownloadr.upload_err_not_writable'));
+                        return false;
+                    }
+                } else {
+                    $this->setError($this->modx->lexicon('filedownloadr.upload_err_count', [
+                        'maxcount' => $this->getOption('uploadMaxCount')
+                    ]));
                     return false;
                 }
             } else {
@@ -2136,16 +2146,25 @@ class FileDownloadR
                 if ($handle) {
                     $contents = fread($handle, filesize($_FILES['fdupload']['tmp_name']));
                     if ($contents) {
-                        if (!$this->mediaSource->createObject($filePath . $this->getOption('directorySeparator'), $fileName, $contents)) {
-                            $this->setError($this->modx->lexicon('filedownloadr.upload_err_not_writable'));
+                        $fileList = $this->mediaSource->getContainerList($filePath . $this->getOption('directorySeparator'));
+                        $fileCount = count($fileList);
+                        if (!$this->getOption('uploadMaxCount') || $fileCount < (int)$this->getOption('uploadMaxCount')) {
+                            if (!$this->mediaSource->createObject($filePath . $this->getOption('directorySeparator'), $fileName, $contents)) {
+                                $this->setError($this->modx->lexicon('filedownloadr.upload_err_not_writable'));
+                            }
+                        } else {
+                            $this->setError($this->modx->lexicon('filedownloadr.upload_err_count', [
+                                'maxcount' => $this->getOption('uploadMaxCount')
+                            ]));
                         }
                     } else {
                         $this->setError($this->modx->lexicon('filedownloadr.upload_err_exists'));
-                        return false;
                     }
                     fclose($handle);
                 } else {
                     $this->setError($this->modx->lexicon('filedownloadr.upload_err_exists'));
+                }
+                if ($this->countError()) {
                     return false;
                 }
             }
@@ -2363,13 +2382,23 @@ class FileDownloadR
     }
 
     /**
-     * Get string error for boolean returned methods.
+     * Get errors for boolean returned methods.
      *
      * @return string output
      */
     private function getError()
     {
         return implode("\n", $this->_error);
+    }
+
+    /**
+     * Count errors for boolean returned methods.
+     *
+     * @return string output
+     */
+    private function countError()
+    {
+        return count($this->_error);
     }
 
     /**
@@ -2496,5 +2525,16 @@ class FileDownloadR
             }
         }
         return $fdPath;
+    }
+
+    private function humanFilesize($bytes, $dec = 2): string
+    {
+        $size = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        $factor = floor((strlen($bytes) - 1) / 3);
+        if ($factor == 0) {
+            $dec = 0;
+        }
+
+        return sprintf("%.{$dec}f %s", $bytes / (1024 ** $factor), $size[$factor]);;
     }
 }

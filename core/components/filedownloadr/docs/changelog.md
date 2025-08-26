@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2025-08-26
+
+### Added
+
+- New uploadMaxCount property for the FileDownload snippet 
+
+### Fixed
+
+- Fix upload with a not set media source
+
 ## [3.2.1] - 2025-04-25
 
 ### Fixed
@@ -66,8 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Upload a file in the current directory
-- New uploadFile, uploadFileTypes, uploadGroups and uploadMaxSize property in FileDownload snippet
-- New property countUserDownloads in FileDownload and FileDownloadLink snippets
+- New uploadFile, uploadFileTypes, uploadGroups and uploadMaxSize property for the FileDownload snippet
+- New property countUserDownloads for the FileDownload and FileDownloadLink snippets
 - New placeholders count, count_not, count_user and count_user_not in the directory row template counting in all subdirectories
 - getDir property can be empty when using mediasources
 - New FileDownloadCount snippet for retrieving the download counts of a directory and its subdirectories

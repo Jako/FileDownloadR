@@ -85,7 +85,8 @@ class FileDownloadSnippet extends Snippet
             'uploadFile::bool' => false,
             'uploadFileTypes::explodeSeparated' => 'image/gif,image/jpeg,image/png',
             'uploadGroups' => '',
-            'uploadMaxSize::int' => 2000000,
+            'uploadMaxSize::int' => 2097152,
+            'uploadMaxCount::int' => 0,
             'useGeolocation::bool' => $this->filedownloadr->getOption('use_geolocation'),
             'userGroups' => '',
         ];

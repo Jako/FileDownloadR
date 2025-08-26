@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Manage downloadable files without revealing the file url",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "package": {
     "elements": {
       "snippets": [
@@ -331,7 +331,11 @@
             },
             {
               "name": "uploadMaxSize",
-              "value": "2000000"
+              "value": "2097152"
+            },
+            {
+              "name": "uploadMaxCount",
+              "value": "0"
             },
             {
               "name": "userGroups",
