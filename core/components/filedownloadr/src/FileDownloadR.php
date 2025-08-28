@@ -2367,7 +2367,7 @@ class FileDownloadR
     /**
      * Count errors for boolean returned methods.
      *
-     * @return string output
+     * @return int count
      */
     private function countError()
     {
@@ -2388,7 +2388,7 @@ class FileDownloadR
             'media_source_id' => $this->getOption('mediaSourceId'),
             'hash' => $hash
         ]);
-        return (!$fdPath) ? false : true;
+        return !!$fdPath;
     }
 
     /**
@@ -2508,7 +2508,7 @@ class FileDownloadR
      */
     private function humanFilesize($bytes, $dec = 2): string
     {
-        $size = array('Byte', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        $size = array('Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
         $factor = floor((strlen($bytes) - 1) / 3);
         if ($factor == 0) {
             $dec = 0;
