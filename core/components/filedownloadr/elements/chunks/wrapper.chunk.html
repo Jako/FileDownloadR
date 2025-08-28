@@ -2,7 +2,7 @@
 [[+uploadFile:notempty=`
 <form class="fd-upload-form" action="[[+fd.uploadUrl]]" method="post" enctype="multipart/form-data">
     <input type="hidden" name="fdmaxfilesize" value="[[+uploadMaxSize]]">
-    <label class="fd-label">[[%filedownloadr.upload_text? &extensions=`[[+fd.uploadFileExtensions]]` &namespace=`filedownloadr`]]</label>
+    <label class="fd-label">[[%filedownloadr.upload_text? &extensions=`[[+fd.uploadFileExtensions]]` &count=`[[+fd.uploadMaxCount]]` &size=`[[+fd.uploadMaxSize]]` &namespace=`filedownloadr`]]</label>
     <div class="fd-file-container">
         <input name="fdupload" type="file" accept="[[+fd.uploadFileTypes]]">
     </div>

@@ -2364,6 +2364,8 @@ class FileDownloadR
                 $prefix . 'uploadUrl' => $this->modx->makeUrl($this->modx->resource->get('id'), $this->modx->context->key, $args),
                 $prefix . 'uploadFileExtensions' => $this->getOption('uploadFileExtensions') ? '(*.' . implode(', *.', $this->getOption('uploadFileExtensions')) . ')' : '',
                 $prefix . 'uploadFileTypes' => implode(',', $this->getOption('uploadFileTypes')),
+                $prefix . 'uploadMaxCount' => $this->getOption('uploadMaxCount') ?: '',
+                $prefix . 'uploadMaxSize' => $this->getOption('uploadMaxSize') ? $this->humanFilesize($this->getOption('uploadMaxSize'), 0) : '',
                 $prefix . 'rows' => !empty($this->_output['rows']) ? implode('', $this->_output['rows']) : '',
                 $prefix . 'dirRows' => $this->_output['dirRows'],
                 $prefix . 'fileRows' => $this->_output['fileRows'],
