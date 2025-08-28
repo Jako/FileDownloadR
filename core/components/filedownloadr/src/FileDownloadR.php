@@ -1129,7 +1129,7 @@ class FileDownloadR
             'type' => $type,
             'ext' => $ext,
             'size' => $size,
-            'sizeText' => $this->fileSizeText($size),
+            'sizeText' => $this->humanFilesize($size, 2),
             'unixdate' => $unixDate,
             'date' => $date,
             'image' => $this->getOption('imgLocat') . $imgType,
@@ -1420,35 +1420,6 @@ class FileDownloadR
         }
         $link['hash'] = $hash;
         return $link;
-    }
-
-    /**
-     * Prettify the file size with thousands unit byte.
-     *
-     * @param int $fileSize filesize()
-     * @return string the pretty number
-     */
-    private function fileSizeText($fileSize)
-    {
-        if ($fileSize === 0) {
-            $returnVal = '0 bytes';
-        } else {
-            if ($fileSize > 1024 * 1024 * 1024) {
-                $returnVal = (ceil($fileSize / (1024 * 1024 * 1024) * 100) / 100) . ' GB';
-            } else {
-                if ($fileSize > 1024 * 1024) {
-                    $returnVal = (ceil($fileSize / (1024 * 1024) * 100) / 100) . ' MB';
-                } else {
-                    if ($fileSize > 1024) {
-                        $returnVal = (ceil($fileSize / 1024 * 100) / 100) . ' kB';
-                    } else {
-                        $returnVal = $fileSize . ' B';
-                    }
-                }
-            }
-        }
-
-        return $returnVal;
     }
 
     /**
@@ -2459,7 +2430,7 @@ class FileDownloadR
      * If it's not listed, auto save
      * @param array $file
      * @param bool $autoCreate
-     * @return \fdPaths|null
+     * @return fdPaths|null
      */
     private function getFdPath($file, $autoCreate = true)
     {
@@ -2529,14 +2500,20 @@ class FileDownloadR
         return $fdPath;
     }
 
+    /**
+     * Return the human-readable file size.
+     *
+     * @param int $bytes size of the file in bytes
+     * @return string human-readable file size
+     */
     private function humanFilesize($bytes, $dec = 2): string
     {
-        $size = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+        $size = array('Byte', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
         $factor = floor((strlen($bytes) - 1) / 3);
         if ($factor == 0) {
             $dec = 0;
         }
 
-        return sprintf("%.{$dec}f %s", $bytes / (1024 ** $factor), $size[$factor]);;
+        return sprintf("%.{$dec}f %s", $bytes / (1024 ** $factor), $size[$factor]);
     }
 }
