@@ -974,6 +974,10 @@ class FileDownloadR
      */
     private function getMediasourceDirContents($rootPath, array $contents)
     {
+        // Fix 'Unable to retrieve the mime_type for file' error
+        $this->mediaSource->createContainer($rootPath, '');
+        unset($this->mediaSource->errors['name']);
+
         $scanDir = $this->mediaSource->getContainerList($rootPath);
 
         // Add root path to the Download DB if needed
