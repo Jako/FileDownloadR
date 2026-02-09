@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.3.1] - TBA
+## [3.3.1] - 2026-02-09
 
 ### Added
 
 - Fill placeholders with uploadMaxCount and uploadMaxSize
 - Add the placeholders to the fdWrapperTpl chunk 
 - Use a locale aware method for file sizes in every output
+- FileDownloadR access policy that contains the file_* and directory_* permissions for handling files in a file system media source
 
 ## [3.3.0] - 2025-08-26
 

@@ -3,7 +3,7 @@
   "lowCaseName": "filedownloadr",
   "description": "Manage downloadable files without revealing the file url",
   "author": "Rico Goldsky, Thomas Jakobi",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "package": {
     "elements": {
       "snippets": [
@@ -649,6 +649,7 @@
         "resolve.synctables.php",
         "resolve.events.php",
         "resolve.update.php",
+        "resolve.policies.php",
         "resolve.treehillstudio.php"
       ]
     }

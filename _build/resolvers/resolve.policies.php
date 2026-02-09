@@ -1,6 +1,6 @@
 <?php
 /**
- * Resolve access permissions
+ * Resolve access policies
  *
  * @package filedownloadr
  * @subpackage build
@@ -18,17 +18,18 @@ $accessPolicies = [
         ],
         'template' => [
             'name' => 'AdministratorTemplate',
-            'description' => 'policy_template_administrator_desc',
-            'lexicon' => 'permissions',
-            'template_group' => '1'
         ],
         'permissions' => [
-            'file_create',
+            'directory_create',
+            'directory_list',
+            'directory_remove',
+            'directory_update',
             'file_list',
             'file_remove',
             'file_update',
             'file_upload',
             'file_view',
+            'file_create',
         ]
     ]
 ];
@@ -40,22 +41,23 @@ $accessPolicies = [
  * @param string $permission
  * @return bool
  */
-function createAccessPermission($modx, $policy, $template, $permission)
+function createAccessPolicy($modx, $policy, $template, $permission)
 {
     /** @var modAccessPolicyTemplate $accessPolicyTemplate */
     if (!$accessPolicyTemplate = $modx->getObject('modAccessPolicyTemplate', [
         'name' => $template['name']
     ])
     ) {
-        $accessPolicyTemplate = $modx->newObject('modAccessPolicyTemplate');
-        $accessPolicyTemplate->fromArray([
-            'name' => $template['name'],
-            'description' => $template['description'],
-            'lexicon' => $template['lexicon'],
-            'template_group' => $template['template_group']
-        ]);
-        $accessPolicyTemplate->save();
-        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Policy Template "' . $template['name'] . '" created.');
+        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Policy Template "' . $template['name'] . '" not available.');
+        return false;
+    }
+
+    if (!$modx->getObject('modAccessPermission', [
+        'name' => $permission,
+        'template' => $accessPolicyTemplate->get('id')
+    ])) {
+        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Permission "' . $permission . '" not available in template "' . $accessPolicyTemplate->get('name') . '".');
+        return false;
     }
 
     /** @var modAccessPolicy $accessPolicy */
@@ -80,49 +82,20 @@ function createAccessPermission($modx, $policy, $template, $permission)
     }
     $accessPolicy->save();
 
-    if (!$accessPermission = $modx->getObject('modAccessPermission', [
-        'name' => $permission
-    ])) {
-        /** @var modAccessPermission $accessPermission */
-        $accessPermission = $modx->newObject('modAccessPermission');
-        $accessPermission->fromArray([
-            'name' => $permission,
-            'description' => 'perm.' . $permission . '_desc',
-            'value' => '1'
-        ]);
-        $accessPermission->addOne($accessPolicyTemplate, 'Template');
-        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Permission "' . $permission . '" created.');
-    } else {
-        $accessPermission->set('description', 'perm.' . $permission . '_desc');
-        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Permission "' . $permission . '" updated.');
-    }
-    $accessPermission->save();
     return true;
 }
 
 /**
  * @param modX $modx
  * @param array $policy
- * @param array $template
- * @param string $permission
  * @return bool
  */
-function removeAccessPermission($modx, $policy, $template, $permission)
+function removeAccessPolicy($modx, $policy)
 {
     /** @var modAccessPermission $accessPermission */
     if ($accessPolicy = $modx->getObject('modAccessPolicy', ['name' => $policy['name']])) {
         $accessPolicy->remove();
         $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Policy "' . $policy['name'] . '" removed.');
-    }
-    /** @var modAccessPolicyTemplate $accessPolicyTemplate */
-    if ($accessPolicyTemplate = $modx->getObject('modAccessPolicyTemplate', ['name' => $template['name']])) {
-        $accessPolicyTemplate->remove();
-        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Policy Template "' . $template['name'] . '" removed.');
-    }
-    /** @var modAccessPermission $accessPermission */
-    if ($accessPermission = $modx->getObject('modAccessPermission', ['name' => $permission])) {
-        $accessPermission->remove();
-        $modx->log(xPDO::LOG_LEVEL_INFO, 'Access Permission "' . $permission . '" removed.');
     }
     return true;
 }
@@ -136,7 +109,7 @@ if ($object->xpdo) {
         case xPDOTransport::ACTION_UPGRADE:
             foreach ($accessPolicies as $accessPolicy) {
                 foreach ($accessPolicy['permissions'] as $accessPermission) {
-                    $result = createAccessPermission($modx, $accessPolicy['policy'], $accessPolicy['template'], $accessPermission);
+                    $result = createAccessPolicy($modx, $accessPolicy['policy'], $accessPolicy['template'], $accessPermission);
                     $success = $success && $result;
                 }
             }
@@ -144,10 +117,8 @@ if ($object->xpdo) {
             break;
         case xPDOTransport::ACTION_UNINSTALL:
             foreach ($accessPolicies as $accessPolicy) {
-                foreach ($accessPolicy['permissions'] as $accessPermission) {
-                    $result = removeAccessPermission($modx, $accessPolicy['policy'], $accessPolicy['template'], $accessPermission);
-                    $success = $success && $result;
-                }
+                $result = removeAccessPolicy($modx, $accessPolicy['policy']);
+                $success = $success && $result;
             }
             break;
     }
