@@ -1,3 +1,7 @@
+---
+title: AJAX
+---
+
 You can use the following example to submit a form using AJAX and evaluate the
 result of the submission. For example, if the result is true, you can call the
 download connector of FileDownloadR to start the download.
