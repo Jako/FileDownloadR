@@ -6,122 +6,129 @@
  * @subpackage build
  *
  * @var array $options
- * @var xPDOObject $object
+ * @var xPDOTransport $transport
  */
 
-if ($object->xpdo) {
-    function convertCount(modX $modx, $offset)
-    {
-        $c = $modx->newQuery('fdCount');
-        $c->limit(1000, $offset);
-        $oldCounts = $modx->getIterator('fdCount', $c);
-        if ($oldCounts) {
-            foreach ($oldCounts as $oldCount) {
-                $oldCountArray = $oldCount->toArray();
-                $path = $modx->getObject('fdPaths', [
+/** @var modX $modx */
+$modx = $transport->xpdo;
+
+$success = true;
+
+function convertCount(modX $modx, $offset)
+{
+    $c = $modx->newQuery('fdCount');
+    $c->limit(1000, $offset);
+    $oldCounts = $modx->getIterator('fdCount', $c);
+    if ($oldCounts) {
+        foreach ($oldCounts as $oldCount) {
+            $oldCountArray = $oldCount->toArray();
+            $path = $modx->getObject('fdPaths', [
+                'ctx' => $oldCountArray['ctx'],
+                'filename' => $oldCountArray['filename'],
+                'hash' => $oldCountArray['hash'],
+            ]);
+            if (empty($path)) {
+                $path = $modx->newObject('fdPaths');
+                $path->fromArray([
                     'ctx' => $oldCountArray['ctx'],
+                    'media_source_id' => 0,
                     'filename' => $oldCountArray['filename'],
                     'hash' => $oldCountArray['hash'],
                 ]);
-                if (empty($path)) {
-                    $path = $modx->newObject('fdPaths');
-                    $path->fromArray([
-                        'ctx' => $oldCountArray['ctx'],
-                        'media_source_id' => 0,
-                        'filename' => $oldCountArray['filename'],
-                        'hash' => $oldCountArray['hash'],
+                $downloads = [];
+                for ($i = 0; $i < $oldCountArray['count']; $i++) {
+                    $download = $modx->newObject('fdDownloads');
+                    $download->fromArray([
+                        'timestamp' => time(),
                     ]);
-                    $downloads = [];
-                    for ($i = 0; $i < $oldCountArray['count']; $i++) {
-                        $download = $modx->newObject('fdDownloads');
-                        $download->fromArray([
-                            'timestamp' => time(),
-                        ]);
-                        $downloads[] = $download;
-                    }
-                    $path->addMany($downloads);
+                    $downloads[] = $download;
                 }
-                if ($path->save() === false) {
-                    continue;
-                }
-                $oldCount->remove();
+                $path->addMany($downloads);
             }
-        }
-    }
-
-    function removeDuplicates(modX $modx)
-    {
-        $c = $modx->newQuery('fdPaths');
-        $c->innerJoin('fdPaths', 'Paths', [
-            'fdPaths.ctx = Paths.ctx',
-            'fdPaths.media_source_id = Paths.media_source_id',
-            'fdPaths.filename = Paths.filename',
-        ]);
-        $c->where([
-            'fdPaths.id < Paths.id',
-        ]);
-        $i = 0;
-        $duplicateCollection = $modx->getIterator('fdPaths', $c);
-        foreach ($duplicateCollection as $duplicate) {
-            $duplicate->remove();
-            $i++;
-        }
-        return $i;
-    }
-
-    /** @var modX $modx */
-    $modx =& $object->xpdo;
-    removeDuplicates($modx);
-
-    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
-        case xPDOTransport::ACTION_UPGRADE:
-            // http://forums.modx.com/thread/88734/package-version-check#dis-post-489104
-            $c = $modx->newQuery('transport.modTransportPackage');
-            $c->where([
-                'workspace' => 1,
-                "(SELECT
-                    `signature`
-                  FROM {$modx->getTableName('transport.modTransportPackage')} AS `latestPackage`
-                  WHERE `latestPackage`.`package_name` = `modTransportPackage`.`package_name`
-                  ORDER BY
-                     `latestPackage`.`version_major` DESC,
-                     `latestPackage`.`version_minor` DESC,
-                     `latestPackage`.`version_patch` DESC,
-                     IF(`release` = '' OR `release` = 'ga' OR `release` = 'pl','z',`release`) DESC,
-                     `latestPackage`.`release_index` DESC
-                  LIMIT 1,1) = `modTransportPackage`.`signature`",
-            ]);
-            $c->where([
-                'modTransportPackage.package_name' => 'filedownloadr',
-                'installed:IS NOT' => null
-            ]);
-
-            /** @var modTransportPackage $oldPackage */
-            $oldPackage = $modx->getObject('transport.modTransportPackage', $c);
-
-            $modelPath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/') . 'model/';
-            $modx->addPackage('filedownloadr', $modelPath);
-
-            if ($oldPackage) {
-                if ($oldPackage->compareVersion('2.0.0-beta1', '>')) {
-                    $count = $modx->getCount('fdCount');
-                    if ($count > 0) {
-                        $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to convert the database...', '', 'FileDownloadR');
-                        $split = ceil($count / 1000); // limit
-                        for ($index = 0; $index < $split; $index++) {
-                            $offset = $index * 10;
-                            convertCount($modx, $offset);
-                        }
-                        $modx->log(xPDO::LOG_LEVEL_INFO, 'Conversion is finished!', '', 'FileDownloadR');
-                    }
-                }
-                if ($oldPackage->compareVersion('2.0.2', '>')) {
-                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to remove duplicate file paths in the database...', '', 'FileDownloadR');
-                    $count = removeDuplicates($modx);
-                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Removed ' . $count . ' duplicate file paths!', '', 'FileDownloadR');
-                }
+            if ($path->save() === false) {
+                continue;
             }
-            break;
+            $oldCount->remove();
+        }
     }
 }
-return true;
+
+function removeDuplicates(modX $modx)
+{
+    $c = $modx->newQuery('fdPaths');
+    $c->innerJoin('fdPaths', 'Paths', [
+        'fdPaths.ctx = Paths.ctx',
+        'fdPaths.media_source_id = Paths.media_source_id',
+        'fdPaths.filename = Paths.filename',
+    ]);
+    $c->where([
+        'fdPaths.id < Paths.id',
+    ]);
+    $i = 0;
+    $duplicateCollection = $modx->getIterator('fdPaths', $c);
+    foreach ($duplicateCollection as $duplicate) {
+        $duplicate->remove();
+        $i++;
+    }
+    return $i;
+}
+
+removeDuplicates($modx);
+
+switch ($options[xPDOTransport::PACKAGE_ACTION]) {
+    case xPDOTransport::ACTION_INSTALL:
+    case xPDOTransport::ACTION_UPGRADE:
+        $c = $modx->newQuery('transport.modTransportPackage');
+        $c->where([
+            'workspace' => 1,
+            "(SELECT
+            `signature`
+            FROM {$modx->getTableName('transport.modTransportPackage')} AS `latestPackage`
+            WHERE `latestPackage`.`package_name` = `modTransportPackage`.`package_name`
+            ORDER BY
+                `latestPackage`.`version_major` DESC,
+                `latestPackage`.`version_minor` DESC,
+                `latestPackage`.`version_patch` DESC,
+                IF(`release` = '' OR `release` = 'ga' OR `release` = 'pl','z',`release`) DESC,
+                `latestPackage`.`release_index` DESC
+                LIMIT 1,1) = `modTransportPackage`.`signature`",
+        ]);
+        $c->where([
+            'modTransportPackage.signature:LIKE' => $options['namespace'] . '-%',
+            'modTransportPackage.installed:IS NOT' => null
+        ]);
+        $c->limit(1);
+
+        /** @var modTransportPackage $oldPackage */
+        $oldPackage = $modx->getObject('transport.modTransportPackage', $c);
+
+        $modelPath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/') . 'model/';
+        $modx->addPackage('filedownloadr', $modelPath);
+
+        if ($oldPackage) {
+            if ($oldPackage->compareVersion('2.0.0-beta1', '>')) {
+                $count = $modx->getCount('fdCount');
+                if ($count > 0) {
+                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to convert the database...', '', 'FileDownloadR');
+                    $split = ceil($count / 1000); // limit
+                    for ($index = 0; $index < $split; $index++) {
+                        $offset = $index * 10;
+                        convertCount($modx, $offset);
+                    }
+                    $modx->log(xPDO::LOG_LEVEL_INFO, 'Conversion is finished!', '', 'FileDownloadR');
+                }
+            }
+            if ($oldPackage->compareVersion('2.0.2', '>')) {
+                $modx->log(xPDO::LOG_LEVEL_INFO, 'Starting to remove duplicate file paths in the database...', '', 'FileDownloadR');
+                $count = removeDuplicates($modx);
+                $modx->log(xPDO::LOG_LEVEL_INFO, 'Removed ' . $count . ' duplicate file paths!', '', 'FileDownloadR');
+            }
+        }
+
+        $success = true;
+        break;
+    case xPDOTransport::ACTION_UNINSTALL:
+        $success = true;
+        break;
+}
+return $success;

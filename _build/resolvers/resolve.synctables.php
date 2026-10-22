@@ -6,7 +6,7 @@
  * @subpackage build
  *
  * @var array $options
- * @var xPDOObject $object
+ * @var xPDOTransport $transport
  */
 
 if (!function_exists('updateTableColumns')) {
@@ -104,28 +104,27 @@ if (!function_exists('alterTable')) {
     }
 }
 
-if ($object->xpdo) {
-    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
-        case xPDOTransport::ACTION_INSTALL:
-        case xPDOTransport::ACTION_UPGRADE:
-            /** @var modX $modx */
-            $modx = &$object->xpdo;
+/** @var modX $modx */
+$modx = $transport->xpdo;
 
-            $tables = [
-                "fdCount",
-                "fdDownloads",
-                "fdPaths"
-            ];
+$success = true;
 
-            $modelPath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/') . 'model/';
-            $modx->addPackage('filedownloadr', $modelPath);
+switch ($options[xPDOTransport::PACKAGE_ACTION]) {
+    case xPDOTransport::ACTION_INSTALL:
+    case xPDOTransport::ACTION_UPGRADE:
+        $tables = [
+            "fdCount",
+            "fdDownloads",
+            "fdPaths"
+        ];
 
-            foreach ($tables as $table) {
-                $modx->log(xPDO::LOG_LEVEL_INFO, 'Altering table: ' . $table);
-                alterTable($modx, $table);
-            }
+        $modelPath = $modx->getOption('filedownloadr.core_path', null, $modx->getOption('core_path') . 'components/filedownloadr/') . 'model/';
+        $modx->addPackage('filedownloadr', $modelPath);
 
-            break;
-    }
+        foreach ($tables as $table) {
+            $modx->log(xPDO::LOG_LEVEL_INFO, 'Altering table: ' . $table);
+            alterTable($modx, $table);
+        }
+        break;
 }
 return true;
