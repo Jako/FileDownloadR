@@ -1538,7 +1538,8 @@ class FileDownloadR
         }
         $phs = $this->options;
         foreach ($contents as $k => $v) {
-            $phs[$this->getOption('prefix') . $k] = $v;
+            // The directory and file names must not be parsed as MODX tags
+            $phs[$this->getOption('prefix') . $k] = $this->escapeTags($v);
         }
         return $this->parse->getChunk($this->getOption('tplDir'), $phs);
     }
@@ -1684,7 +1685,8 @@ class FileDownloadR
                     $value[$k] = htmlspecialchars($v);
                 }
             }
-            $phs[$this->getOption('prefix') . $key] = $value;
+            // The file names of uploaded files must not be parsed as MODX tags
+            $phs[$this->getOption('prefix') . $key] = $this->escapeTags($value);
         }
         return $this->parse->getChunk($this->getOption('tplFile'), $phs);
     }
@@ -2060,7 +2062,9 @@ class FileDownloadR
                 if (in_array($type, $allowedTypes)) {
                     if (filesize($_FILES['fdupload']['tmp_name']) <= (int)$this->getOption('uploadMaxSize')) {
                         $mimes = new MimeTypes;
-                        $fileName = pathinfo($_FILES['fdupload']['name'], PATHINFO_FILENAME) . '.' . $mimes->getExtension($type);
+                        // Clean the file name sent by the client, it is shown in the file list
+                        $fileName = $this->modx->filterPathSegment(pathinfo($_FILES['fdupload']['name'], PATHINFO_FILENAME));
+                        $fileName = ($fileName ?: 'upload') . '.' . $mimes->getExtension($type);
                     } else {
                         $this->setError($this->modx->lexicon('filedownloadr.upload_err_filesize', [
                             'maxsize' => $this->humanFilesize($this->getOption('uploadMaxSize'), 0)
@@ -2519,5 +2523,20 @@ class FileDownloadR
         }
 
         return sprintf("%.{$dec}f %s", $bytes / (1024 ** $factor), $size[$factor]);
+    }
+
+    /**
+     * Escape the MODX tags in values set by visitors or in file names, because the
+     * placeholders of a chunk are parsed again after they are replaced
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function escapeTags($value)
+    {
+        if (is_array($value)) {
+            return array_map([$this, 'escapeTags'], $value);
+        }
+        return (is_string($value)) ? str_replace(['[', ']'], ['&#91;', '&#93;'], $value) : $value;
     }
 }

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Escape MODX tags in the directory and file names of the file list
+- Clean the file names of uploaded files with the MODX path segment filter
 - Don't log the suppressed open_basedir warnings of Composer during the installation
 
 ## [3.3.2] - 2026-02-24
